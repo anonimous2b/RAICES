@@ -1,0 +1,1612 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas de Raíces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: mapa de América a la izquierda, ficha de archivo a la derecha, línea de tiempo abajo. */
+:root {
+  --mar: #e3e8ea;
+  --tierra: #f7f6f2;
+  --linea-pais: #b4bcc1;
+  --regimen: #c49a3c;
+  --foco: #9e1f1a;
+  --flecha: #1d3d5c;
+  --texto: #1a1e22;
+  --tenue: #59636d;
+  --fondo: #eceeeb;
+  --superficie: #ffffff;
+  --borde: #d3d8d6;
+  --probado: #2f6b3a;
+  --documentado: #1d5a8a;
+  --afirmado: #9a6b00;
+  --sinrelevar: #6b7280;
+  --estructura: #6a3d9a;
+  --sombra: 0 1px 2px rgb(20 30 40 / .06), 0 8px 24px rgb(20 30 40 / .06);
+  --f-titulo: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-texto: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-dato: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --mar: #0f151b; --tierra: #1e252c; --linea-pais: #3b4651; --regimen: #b38a35; --foco: #f0705f;
+    --flecha: #93b8dc; --texto: #e7eaec; --tenue: #9aa4ad; --fondo: #12171c; --superficie: #1a2027;
+    --borde: #2e3740; --probado: #7cc48a; --documentado: #7fb6e6; --afirmado: #e2b552; --sinrelevar: #9aa3ad; --estructura: #c3a3ea;
+    --sombra: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --mar: #0f151b; --tierra: #1e252c; --linea-pais: #3b4651; --regimen: #b38a35; --foco: #f0705f;
+  --flecha: #93b8dc; --texto: #e7eaec; --tenue: #9aa4ad; --fondo: #12171c; --superficie: #1a2027;
+  --borde: #2e3740; --probado: #7cc48a; --documentado: #7fb6e6; --afirmado: #e2b552; --sinrelevar: #9aa3ad; --estructura: #c3a3ea;
+  --sombra: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .25);
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--fondo); color: var(--texto);
+  font: 15px/1.5 var(--f-texto);
+  padding-block: 20px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.marco { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 24px; }
+h1 { margin: 0; font: 700 clamp(1.5rem, 3vw, 2.1rem)/1.1 var(--f-titulo); letter-spacing: -.01em; text-wrap: balance; }
+.bajada { margin: 4px 0 0; color: var(--tenue); max-width: 62ch; }
+.aviso {
+  font: 500 .78rem/1.4 var(--f-dato); color: var(--afirmado); border: 1px dashed currentColor;
+  padding: 6px 10px; border-radius: 4px; max-width: 46ch;
+}
+.cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.mapa {
+  position: relative; background: var(--mar); border: 1px solid var(--borde); border-radius: 6px; overflow: hidden;
+}
+.mapa svg { display: block; width: 100%; height: auto; max-height: calc(100vh - 230px); }
+.pais { fill: var(--tierra); stroke: var(--linea-pais); stroke-width: .6; vector-effect: non-scaling-stroke; transition: fill .35s; }
+.pais.regimen { fill: color-mix(in srgb, var(--regimen) 42%, var(--tierra)); }
+.pais.area { fill: color-mix(in srgb, var(--flecha) 22%, var(--tierra)); }
+.pais.regimen.area { fill: color-mix(in srgb, var(--regimen) 42%, color-mix(in srgb, var(--flecha) 22%, var(--tierra))); }
+.pais.autoritario { fill: url(#rayado-mapa); }
+.rayado-fondo { fill: var(--tierra); }
+.rayado-linea { stroke: color-mix(in srgb, var(--regimen) 75%, var(--tierra)); stroke-width: 2.4; }
+.pais.foco { stroke: var(--foco); stroke-width: 2; }
+.etiqueta-pais {
+  font: 600 13px var(--f-titulo); fill: var(--texto); text-anchor: middle; pointer-events: none;
+  paint-order: stroke; stroke: var(--tierra); stroke-width: 3px; stroke-linejoin: round; letter-spacing: .02em;
+}
+.anio-grande {
+  font: 700 64px var(--f-titulo); fill: var(--texto); opacity: .13; pointer-events: none; font-variant-numeric: tabular-nums;
+}
+.flecha { fill: none; stroke: var(--flecha); stroke-width: 2.2; vector-effect: non-scaling-stroke; stroke-dasharray: 7 5; }
+.flecha-punta { fill: var(--flecha); }
+.flecha-texto {
+  font: 500 12px var(--f-dato); fill: var(--flecha); paint-order: stroke; stroke: var(--mar); stroke-width: 4px; stroke-linejoin: round;
+}
+.pin { fill: var(--foco); stroke: var(--superficie); stroke-width: 2; }
+.pin-onda { fill: none; stroke: var(--foco); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: onda 1.8s ease-out infinite; }
+@keyframes onda { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.6); opacity: 0; } }
+.punto-otro { fill: var(--texto); opacity: .35; }
+.leyenda {
+  position: absolute; left: 10px; bottom: 10px; display: grid; gap: 4px; padding: 8px 10px;
+  background: color-mix(in srgb, var(--superficie) 88%, transparent); border: 1px solid var(--borde); border-radius: 4px;
+  font-size: .76rem; color: var(--tenue);
+}
+.leyenda span { display: flex; align-items: center; gap: 8px; }
+.muestra { width: 16px; height: 11px; border-radius: 2px; flex: none; }
+.m-regimen { background: color-mix(in srgb, var(--regimen) 42%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-autoritario {
+  background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--regimen) 75%, var(--tierra)) 0 2px, var(--tierra) 2px 5px);
+  border: 1px solid var(--linea-pais);
+}
+.m-foco { background: var(--tierra); border: 2px solid var(--foco); }
+.m-area { background: color-mix(in srgb, var(--flecha) 22%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-flecha { height: 0; border-top: 2px dashed var(--flecha); }
+
+.ficha {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: 6px; box-shadow: var(--sombra);
+  display: grid; gap: 14px; padding: 18px 18px 16px; position: relative;
+}
+.ficha::before {
+  content: ""; position: absolute; top: -1px; left: 18px; width: 64px; height: 4px; background: var(--foco); border-radius: 0 0 2px 2px;
+}
+.ficha-cabeza { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font: 500 .78rem var(--f-dato); color: var(--tenue); text-transform: uppercase; letter-spacing: .06em; }
+.chip { border: 1px solid var(--borde); border-radius: 3px; padding: 1px 6px; }
+.chip.tipo-hito { color: var(--flecha); border-color: currentColor; }
+.chip.tipo-dictadura { color: var(--foco); border-color: currentColor; }
+.chip.tipo-estructura { color: var(--estructura); border-color: currentColor; }
+.chip.tipo-autoritario { color: var(--foco); border-color: currentColor; border-style: dashed; }
+.ficha h2 { margin: 0; font: 600 1.42rem/1.18 var(--f-titulo); text-wrap: balance; }
+.fechas { margin: -8px 0 0; font: 400 .86rem var(--f-dato); color: var(--tenue); font-variant-numeric: tabular-nums; }
+.resumen { margin: 0; }
+dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
+dl .ancho { grid-column: 1 / -1; }
+.ficha { padding: 22px 26px 20px; }
+.ficha h2 { font-size: 1.6rem; }
+.resumen { max-width: 75ch; }
+.enlaces { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+@media (max-width: 1200px) { .enlaces { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { dl { grid-template-columns: 1fr; } }
+dt { font: 500 .72rem var(--f-dato); text-transform: uppercase; letter-spacing: .08em; color: var(--tenue); margin-bottom: 3px; }
+dd { margin: 0; }
+.prueba {
+  display: inline-block; font: 500 .72rem var(--f-dato); text-transform: uppercase; letter-spacing: .06em;
+  padding: 1px 6px; border-radius: 3px; border: 1px solid currentColor; margin-right: 6px; vertical-align: 1px;
+}
+.p-probado { color: var(--probado); } .p-documentado { color: var(--documentado); }
+.p-afirmado { color: var(--afirmado); } .p-por-verificar, .p-sin-relevar { color: var(--sinrelevar); }
+.p-por-verificar { border-style: dashed; }
+.fuente { font-size: .86rem; color: var(--tenue); }
+.enlaces { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.enlaces li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: .88rem; line-height: 1.35; }
+.enlace-tipo { font: 500 .66rem var(--f-dato); text-transform: uppercase; letter-spacing: .06em; color: var(--tenue); }
+.enlaces a { color: var(--documentado); text-decoration-thickness: 1px; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.enlaces a:hover { color: var(--texto); }
+.claves { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: .74rem; color: var(--tenue); }
+.claves span { display: inline-flex; align-items: center; gap: 5px; }
+.claves i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.detalle {
+  justify-self: start; font: 500 .82rem var(--f-texto); color: var(--tenue); background: transparent;
+  border: 1px dashed var(--borde); border-radius: 4px; padding: 6px 10px; cursor: not-allowed;
+}
+
+.navegacion {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: 6px; padding: 12px 14px 10px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center;
+}
+.boton {
+  font: 600 .9rem var(--f-titulo); color: var(--texto); background: var(--fondo); border: 1px solid var(--borde);
+  border-radius: 4px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+}
+.boton:hover:not(:disabled) { border-color: var(--texto); }
+.boton:disabled { opacity: .4; cursor: default; }
+:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
+.navegacion > div { min-width: 0; }
+.linea { overflow-x: auto; }
+.linea svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.navegacion { align-items: start; }
+.navegacion .boton { margin-top: 8px; }
+.eje { stroke: var(--borde); stroke-width: 1; }
+.tick { stroke: var(--linea-pais); }
+.tick-texto { font: 400 11px var(--f-dato); fill: var(--tenue); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.marca { cursor: pointer; }
+.marca circle, .marca rect { stroke: var(--superficie); stroke-width: 1.5; transition: opacity .2s; }
+.marca.dictadura rect { fill: var(--foco); opacity: .45; }
+.marca.autoritario rect { fill: url(#rayado-linea); stroke: var(--foco); stroke-width: 1; opacity: .75; }
+.marca.autoritario.activa rect { stroke: var(--texto); stroke-width: 2; }
+.rayado-barra { stroke: var(--foco); stroke-width: 2.2; }
+.barra-sigue { font: 500 8.5px var(--f-dato); fill: var(--foco); pointer-events: none; }
+.marca.hito circle { fill: var(--flecha); opacity: .7; }
+.marca.estructura circle { fill: var(--estructura); opacity: .7; }
+.marca:hover rect, .marca:hover circle { opacity: .85; }
+.marca.activa rect, .marca.activa circle { opacity: 1; stroke: var(--texto); stroke-width: 2; }
+.marca:focus-visible rect, .marca:focus-visible circle { stroke: var(--texto); stroke-width: 2.5; }
+.barra-desde { font: 500 8.5px var(--f-dato); fill: var(--superficie); pointer-events: none; }
+.guia { stroke: var(--borde); stroke-width: 1; }
+.guia-menor { stroke-dasharray: 2 3; }
+.fila-guia { stroke: var(--borde); stroke-width: 1; opacity: .5; }
+.fila-texto { font: 500 11px var(--f-titulo); fill: var(--tenue); text-anchor: end; }
+.fila-texto.activa { fill: var(--texto); font-weight: 700; }
+.cursor { stroke: var(--texto); stroke-width: 1.5; opacity: .5; }
+.contador { font: 500 .8rem var(--f-dato); color: var(--tenue); font-variant-numeric: tabular-nums; }
+.claves { margin-top: 4px; }
+
+[hidden] { display: none !important; }
+/* Capa de pandillas: etapas del camino (de la formación al reemplazo del Estado) */
+.capas { display: inline-flex; border: 1px solid var(--borde); border-radius: 5px; overflow: hidden; background: var(--superficie); }
+.capas button {
+  font: 600 .86rem var(--f-titulo); color: var(--tenue); background: transparent; border: 0; padding: 7px 12px; cursor: pointer;
+}
+.capas button + button { border-left: 1px solid var(--borde); }
+.capas button[aria-pressed="true"] { color: var(--superficie); background: var(--texto); }
+.cabeza-der { display: grid; gap: 8px; justify-items: end; }
+.pais.nivel-1 { stroke-dasharray: 3 2; fill: color-mix(in srgb, var(--foco) 12%, var(--tierra)); }
+.pais.nivel-2 { fill: color-mix(in srgb, var(--foco) 34%, var(--tierra)); }
+.pais.nivel-3 { fill: color-mix(in srgb, var(--foco) 56%, var(--tierra)); }
+.pais.nivel-4 { fill: color-mix(in srgb, var(--foco) 78%, var(--tierra)); }
+.pais.nivel-5 { fill: color-mix(in srgb, var(--foco) 100%, var(--tierra)); }
+.m-n1 { background: color-mix(in srgb, var(--foco) 12%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-n2 { background: color-mix(in srgb, var(--foco) 34%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-n3 { background: color-mix(in srgb, var(--foco) 56%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-n4 { background: color-mix(in srgb, var(--foco) 78%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.m-n5 { background: color-mix(in srgb, var(--foco) 100%, var(--tierra)); border: 1px solid var(--linea-pais); }
+.tramo { stroke: none; }
+.tramo.n1 { fill: color-mix(in srgb, var(--foco) 12%, var(--tierra)); }
+.tramo.n2 { fill: color-mix(in srgb, var(--foco) 34%, var(--tierra)); }
+.tramo.n3 { fill: color-mix(in srgb, var(--foco) 56%, var(--tierra)); }
+.tramo.n4 { fill: color-mix(in srgb, var(--foco) 78%, var(--tierra)); }
+.tramo.n5 { fill: color-mix(in srgb, var(--foco) 100%, var(--tierra)); }
+.marca.gobernanza circle { fill: var(--superficie); stroke: var(--texto); stroke-width: 1.5; opacity: .9; }
+.marca.gobernanza.activa circle { fill: var(--texto); }
+.chip.puerta { color: var(--texto); border-color: var(--texto); }
+.chip.paso { color: var(--foco); border-color: currentColor; }
+.nota-capa { margin: 0; font-size: .82rem; color: var(--tenue); max-width: 75ch; }
+
+@media (max-width: 960px) {
+  .cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .mapa svg { max-height: 70vh; }
+}
+@media (max-width: 560px) {
+  .navegacion { grid-template-columns: 1fr 1fr; }
+  .navegacion > div:not(.botones-izq) { grid-column: 1 / -1; grid-row: 1; }
+  .leyenda { position: static; border-width: 1px 0 0; border-radius: 0; }
+}
+/* ─── Encabezado en una franja e introducción aparte (19/11/2026) ─── */
+body { margin: 0; }
+header { align-items: center; }
+h1 { font-size: clamp(1.25rem, 2vw, 1.6rem); }
+.cabeza-der { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.info {
+  font: 600 .86rem var(--f-titulo); color: var(--tenue); background: var(--superficie);
+  border: 1px solid var(--borde); border-radius: 5px; padding: 7px 12px; cursor: pointer;
+}
+.info:hover { color: var(--texto); border-color: var(--texto); }
+.teclas { font: 500 .74rem var(--f-dato); color: var(--tenue); }
+kbd {
+  font: 500 .74rem var(--f-dato); border: 1px solid var(--borde); border-bottom-width: 2px; border-radius: 3px;
+  padding: 0 5px; background: var(--superficie); color: var(--texto);
+}
+.intro-fondo {
+  position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px;
+  background: rgb(10 15 20 / .45);
+}
+.intro {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: 8px; box-shadow: var(--sombra);
+  max-width: 64ch; max-height: calc(100dvh - 32px); overflow-y: auto; padding: 22px 26px 20px; display: grid; gap: 12px;
+}
+.intro h2 { margin: 0; font: 700 1.5rem/1.15 var(--f-titulo); }
+.intro-texto { display: grid; gap: 10px; }
+.intro p { margin: 0; }
+.intro .aviso { max-width: none; justify-self: start; }
+.intro-nota { font-size: .86rem; color: var(--tenue); }
+.entendido { justify-self: end; }
+/* «Por qué este atlas» (20/11/2026): bloque plegable arriba de la introducción de cada capa. */
+.porque { border-bottom: 1px solid var(--borde); padding-bottom: 12px; }
+.porque summary { font: 600 .95rem var(--f-titulo); cursor: pointer; margin-bottom: 4px; }
+.porque[open] summary { margin-bottom: 10px; }
+/* Años de la línea de tiempo: quedan pegados abajo aunque las filas se desplacen. */
+.linea svg { width: auto; min-width: 0; }
+.eje-anios { position: sticky; bottom: 0; background: var(--superficie); }
+
+/* ─── Modo pantalla: en una PC todo entra en el alto de la ventana, sin desplazar la página.
+   El mapa toma el alto de la ficha; la ficha y la línea de tiempo se desplazan por dentro. ─── */
+@media (min-width: 961px) and (min-height: 540px) {
+  body { overflow: hidden; padding-block: 10px; }
+  .marco {
+    max-width: 1760px; height: calc(100dvh - 20px);
+    grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px;
+  }
+  .cuerpo { grid-template-rows: minmax(0, 1fr); align-items: stretch; min-height: 0; gap: 12px; }
+  .mapa { height: 100%; }
+  .mapa svg { width: 100%; height: 100%; max-height: none; }
+  .ficha { min-height: 0; overflow-y: auto; align-content: start; padding: 18px 22px 18px; }
+  .ficha h2 { font-size: 1.45rem; }
+  .leyenda { font-size: .72rem; gap: 2px; padding: 6px 8px; }
+  .navegacion { padding: 8px 12px 6px; align-items: center; gap: 12px; }
+  .navegacion .boton { margin-top: 0; }
+  /* alto fijo: entran todos los países a la vez y nada se desplaza al avanzar */
+  .linea { height: clamp(170px, 36vh, 420px); overflow: hidden; }
+  .claves { margin-top: 2px; }
+}
+@media (max-width: 960px) { .teclas { display: none; } }
+.botones-izq { display: grid; gap: 6px; }
+.navegacion .botones-izq .boton { margin-top: 0; }
+/* Las dos capas a la vez: botones que se prenden y apagan por separado. */
+.capas-rotulo { font: 500 .72rem var(--f-dato); color: var(--tenue); text-transform: uppercase; letter-spacing: .06em; }
+.capas button[aria-pressed="true"]::before { content: "✓ "; }
+.sobre { fill: none; stroke: none; pointer-events: none; }
+.sobre.sobre-militar { fill: url(#rayado-dorado); }
+.sobre.sobre-autoritario { fill: url(#rayado-dorado-ralo); }
+.rayado-dorado { stroke: color-mix(in srgb, var(--regimen) 80%, var(--texto)); stroke-width: 3; }
+.sobre.sobre-militar, .sobre.sobre-autoritario { stroke: color-mix(in srgb, var(--regimen) 80%, var(--texto)); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.sobre.sobre-autoritario { stroke-dasharray: 4 3; }
+.sobre.sobre-foco { stroke: none; }
+.claves i.c-dict { background: var(--foco); border-radius: 2px; width: 18px; }
+.claves i.c-aut { background: repeating-linear-gradient(45deg, var(--foco) 0 2px, transparent 2px 5px); border: 1px solid var(--foco); border-radius: 2px; width: 18px; }
+/* Con las dos capas, un solo código en el mapa y en la línea de tiempo: dorado = dictadura o régimen, rojo = pandillas. */
+.juntas .marca.dictadura rect { fill: var(--regimen); opacity: .8; }
+.juntas .marca.autoritario rect { stroke: var(--regimen); }
+.juntas .marca.activa rect { stroke: var(--texto); }
+.juntas .rayado-barra { stroke: var(--regimen); }
+.juntas .barra-sigue { fill: var(--regimen); }
+.juntas .tramo { stroke: var(--foco); stroke-width: .8; stroke-opacity: .7; }
+.juntas .claves i.c-dict { background: var(--regimen); }
+.juntas .claves i.c-aut { background: repeating-linear-gradient(45deg, var(--regimen) 0 2px, transparent 2px 5px); border-color: var(--regimen); }
+.m-rayado-denso { background: repeating-linear-gradient(45deg, var(--regimen) 0 2.5px, var(--tierra) 2.5px 5px); border: 1.5px solid var(--regimen); }
+.m-rayado-ralo { background: repeating-linear-gradient(-45deg, var(--regimen) 0 2px, var(--tierra) 2px 8px); border: 1.5px dashed var(--regimen); }
+/* Referencias del mapa plegadas en un botón: no cambian entre episodios. */
+.mapa:not(.ref-abiertas) .leyenda { display: none; }
+.mapa.ref-abiertas .leyenda { bottom: 48px; }
+.ref-boton {
+  position: absolute; left: 10px; bottom: 10px; font: 600 .8rem var(--f-titulo); color: var(--tenue);
+  background: color-mix(in srgb, var(--superficie) 92%, transparent); border: 1px solid var(--borde);
+  border-radius: 4px; padding: 5px 10px; cursor: pointer;
+}
+.ref-boton:hover, .mapa.ref-abiertas .ref-boton { color: var(--texto); border-color: var(--texto); }
+@media (max-width: 560px) { .mapa.ref-abiertas .leyenda { margin-bottom: 44px; } }
+@media (prefers-reduced-motion: reduce) {
+  .pin-onda { animation: none; opacity: 0; }
+  .pais { transition: none; }
+}
+</style>
+
+<div class="marco">
+  <header>
+    <h1>Atlas de Raíces</h1>
+    <div class="cabeza-der">
+      <span class="capas-rotulo">Capas (una o las dos)</span>
+      <div class="capas" role="group" aria-label="Capas del atlas: se pueden prender una o las dos">
+        <button type="button" id="capa-raices" aria-pressed="true">Regímenes y estructuras</button>
+        <button type="button" id="capa-gob" aria-pressed="false">Pandillas: el camino</button>
+      </div>
+      <button class="info" id="ver-intro" type="button" aria-haspopup="dialog">ⓘ Cómo leer este atlas</button>
+      <span class="teclas" aria-hidden="true"><kbd>←</kbd> <kbd>→</kbd> cambian de episodio</span>
+    </div>
+  </header>
+
+  <!-- Introducción de cada capa: se muestra la primera vez y vuelve con el botón ⓘ. -->
+  <div class="intro-fondo" id="intro" hidden>
+    <div class="intro" role="dialog" aria-modal="true" aria-labelledby="intro-titulo">
+      <h2 id="intro-titulo">Atlas de Raíces</h2>
+      <!-- Por qué este atlas (20/11/2026). Mismo texto en ../por_que_este_atlas.md. -->
+      <details class="porque" open>
+        <summary>Por qué este atlas</summary>
+        <div class="intro-texto">
+          <p>Las noticias policiales cuentan qué pasó ayer y dónde. Este atlas mira hacia atrás. Pone en un mismo mapa y en una misma línea de tiempo setenta años de dictaduras, regímenes autoritarios, estructuras opacas del Estado y pandillas de América Latina, para preguntarse de dónde pueden venir algunas de las violencias de hoy.</p>
+          <p>La pregunta que lo guía es qué tienen en común los lugares donde el crimen se organizó. Una posible respuesta es que, para combatir a un enemigo, muchos Estados armaron aparatos sin control externo, con fondos reservados e impunidad: servicios de inteligencia, brigadas, unidades de drogas. Cuando su misión terminó, en varios casos esos aparatos no desaparecieron. Su gente, sus armas, sus contactos y su impunidad pasaron al delito o lo protegieron.</p>
+          <p><b>Es una pista, no una explicación cerrada.</b> Hay países que tuvieron dictaduras durísimas y hoy tienen pocos homicidios, como Chile y Uruguay, y hay redes criminales que crecieron en plena democracia. Las violencias tienen muchas causas: los mercados de la droga, la desigualdad, las cárceles, las armas, la política local. Este atlas no reemplaza ninguna de ellas ni pretende decir cuál pesa más.</p>
+          <p>Lo mostramos para abrir preguntas y zonas de investigación, no para cerrarlas. Por eso cada ficha dice cuánto sabemos de lo que cuenta: si está probado, documentado, solo afirmado o sin prueba. Un caso que contradiga lo que se ve acá nos sirve tanto como uno que lo confirme.</p>
+        </div>
+      </details>
+      <div class="intro-texto" id="intro-raices">
+        <p>De la posguerra a hoy: las dictaduras de América Latina, las estructuras opacas que montaron y qué pasó con ellas cuando la misión terminó. También los regímenes autoritarios civiles (partido único o elecciones sin garantías), fechados con la clasificación de V-Dem, porque pueden armar las mismas estructuras.</p>
+        <p class="aviso">Versión preliminar, en revisión (24/11/2026): puede contener errores y las conclusiones pueden cambiar. Cada ficha indica el nivel de prueba de lo que afirma; las fuentes citadas están archivadas y selladas.</p>
+      </div>
+      <div class="intro-texto" id="intro-gob" hidden>
+        <p>El camino que lleva a una pandilla a gobernar un territorio. Hay cuatro puertas de entrada: <b>A</b>, la cárcel; <b>B</b>, el Estado armado; <b>C</b>, el descabezamiento de una organización grande; <b>D</b>, el patrón político. Todas terminan en cobrar «renta», «piso» o «vacuna» al barrio. Cada país se pinta según la etapa en que estaba ese año.</p>
+        <p>La etapa resume en qué punto del camino estaba el país según las fuentes de cada episodio: es una síntesis nuestra, no un índice oficial. Argentina no aparece: no hay evidencia para ubicarla, ni para descartarla.</p>
+        <p class="aviso">Versión preliminar, en revisión (24/11/2026): puede contener errores y las conclusiones pueden cambiar. Cada ficha indica el nivel de prueba de lo que afirma; las fuentes citadas están archivadas y selladas.</p>
+      </div>
+      <div class="intro-texto" id="intro-juntas" hidden>
+        <p><b>Las dos capas juntas.</b> Cada país se pinta según la etapa de las pandillas ese año, y la dictadura o el régimen autoritario va en dorado, como en su capa. Si un país tiene las dos cosas el mismo año, el relleno es la etapa de las pandillas y la dictadura va rayada en dorado encima. En la línea de tiempo, cada país tiene la barra dorada de la dictadura arriba y la franja roja de las pandillas abajo. Sirve para ver qué vino antes y qué se superpone.</p>
+      </div>
+      <p class="intro-nota">Para recorrerlo: la línea de tiempo de abajo, los botones Anterior y Siguiente, o las flechas <kbd>←</kbd> <kbd>→</kbd> del teclado. Este texto vuelve con el botón «ⓘ Cómo leer este atlas».</p>
+      <button class="boton entendido" id="cerrar-intro" type="button">Entendido</button>
+    </div>
+  </div>
+
+  <div class="cuerpo">
+    <figure class="mapa" style="margin:0">
+      <svg id="mapa" role="img" aria-labelledby="mapa-desc">
+        <desc id="mapa-desc">Mapa de América con el país del episodio, los países bajo régimen militar ese año y las flechas de intervención o coordinación.</desc>
+        <defs>
+          <marker id="punta" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="flecha-punta" d="M0 0 L10 5 L0 10 z"></path>
+          </marker>
+          <pattern id="rayado-dorado" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line class="rayado-dorado" x1="0" y1="0" x2="0" y2="6"></line>
+          </pattern>
+          <pattern id="rayado-dorado-ralo" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+            <line class="rayado-dorado" x1="0" y1="0" x2="0" y2="11"></line>
+          </pattern>
+          <pattern id="rayado-mapa" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect class="rayado-fondo" width="7" height="7"></rect>
+            <line class="rayado-linea" x1="0" y1="0" x2="0" y2="7"></line>
+          </pattern>
+        </defs>
+        <g id="capa-paises"></g>
+        <g id="capa-sobre"></g>
+        <text id="anio-grande" class="anio-grande" x="976" y="84" text-anchor="end"></text>
+        <g id="capa-etiquetas"></g>
+        <g id="capa-flechas"></g>
+        <g id="capa-pines"></g>
+      </svg>
+      <button class="ref-boton" id="ver-ref" type="button" aria-expanded="false" aria-controls="leyenda-raices leyenda-gob leyenda-juntas">Referencias ▴</button>
+      <div class="leyenda" id="leyenda-juntas" aria-label="Referencias de las dos capas juntas" hidden>
+        <span><i class="muestra m-n1"></i>1 · Formación</span>
+        <span><i class="muestra m-n2"></i>2 · Organización</span>
+        <span><i class="muestra m-n3"></i>3 · Gobierno del territorio</span>
+        <span><i class="muestra m-n4"></i>4 · Negocia con el Estado</span>
+        <span><i class="muestra m-n5"></i>5 · Reemplaza al Estado</span>
+        <span><i class="muestra m-regimen"></i>Dictadura o régimen militar ese año</span>
+        <span><i class="muestra m-autoritario"></i>Régimen autoritario civil ese año (V-Dem)</span>
+        <span><i class="muestra m-rayado-denso"></i>Las dos cosas: etapa de pandillas con dictadura encima</span>
+        <span><i class="muestra m-foco"></i>País del episodio</span>
+        <span><i class="muestra m-flecha"></i>Intervención, coordinación o traslado</span>
+      </div>
+      <div class="leyenda" id="leyenda-gob" aria-label="Referencias de la capa de pandillas" hidden>
+        <span><i class="muestra m-n1"></i>1 · Formación: grupos sueltos o armados por el Estado</span>
+        <span><i class="muestra m-n2"></i>2 · Organización: la cárcel o la estructura la consolida</span>
+        <span><i class="muestra m-n3"></i>3 · Gobierno del territorio: cobra y pone reglas</span>
+        <span><i class="muestra m-n4"></i>4 · Negocia con el Estado</span>
+        <span><i class="muestra m-n5"></i>5 · Reemplaza al Estado</span>
+        <span><i class="muestra m-foco"></i>País del episodio</span>
+      </div>
+      <div class="leyenda" id="leyenda-raices" aria-label="Referencias">
+        <span><i class="muestra m-regimen"></i>Régimen militar o dictadura ese año</span>
+        <span><i class="muestra m-autoritario"></i>Régimen autoritario civil ese año (V-Dem)</span>
+        <span><i class="muestra m-foco"></i>País del episodio</span>
+        <span><i class="muestra m-area"></i>Otros países implicados</span>
+        <span><i class="muestra m-flecha"></i>Intervención, coordinación o traslado</span>
+      </div>
+    </figure>
+
+    <article class="ficha" id="ficha" aria-live="polite"></article>
+  </div>
+
+  <nav class="navegacion" aria-label="Navegar episodios">
+    <div class="botones-izq">
+      <button class="boton" id="inicio" type="button" title="Volver al primer episodio (tecla Inicio)">⏮ Inicio</button>
+      <button class="boton" id="anterior" type="button">← Anterior</button>
+    </div>
+    <div>
+      <div class="linea"><svg id="linea" aria-label="Línea de tiempo de episodios"></svg><svg id="linea-eje" class="eje-anios" aria-hidden="true"></svg></div>
+      <div class="claves" id="claves-gob" aria-hidden="true" hidden>
+        <span><i class="m-n1" style="border-radius:2px;width:18px"></i>Formación</span>
+        <span><i class="m-n2" style="border-radius:2px;width:18px"></i>Organización</span>
+        <span><i class="m-n3" style="border-radius:2px;width:18px"></i>Gobierno del territorio</span>
+        <span><i class="m-n4" style="border-radius:2px;width:18px"></i>Negocia con el Estado</span>
+        <span><i class="m-n5" style="border-radius:2px;width:18px"></i>Reemplaza al Estado</span>
+        <span><i style="background:var(--superficie);border:1.5px solid var(--texto)"></i>Episodio</span>
+        <span id="contador-gob" class="contador"></span>
+      </div>
+      <div class="claves" id="claves-raices" aria-hidden="true">
+        <span><i class="c-dict"></i>Dictadura, de inicio a fin</span>
+        <span><i class="c-aut"></i>Régimen autoritario civil (V-Dem); «sigue ▸» si no terminó</span>
+        <span><i style="background:var(--flecha)"></i>Hito</span>
+        <span><i style="background:var(--estructura)"></i>Estructura opaca</span>
+        <span id="contador" class="contador"></span>
+      </div>
+    </div>
+    <button class="boton" id="siguiente" type="button">Siguiente →</button>
+  </nav>
+</div>
+
+<script src="geo.js"></script>
+<script>
+// ─── Lugares (lon, lat) ───────────────────────────────────────────────
+const L = {
+  washington: [-77.04, 38.9], nuevaYork: [-74.0, 40.71], fortBenning: [-84.95, 32.36], zonaCanal: [-79.6, 9.0],
+  caracas: [-66.9, 10.5], habana: [-82.38, 23.13], bogota: [-74.07, 4.71], guatemala: [-90.51, 14.63],
+  asuncion: [-57.58, -25.29], puertoPrincipe: [-72.34, 18.54], brasilia: [-47.88, -15.79], rio: [-43.2, -22.9],
+  buenosAires: [-58.38, -34.6], lima: [-77.03, -12.05], panama: [-79.52, 8.98], laPaz: [-68.15, -16.5],
+  montevideo: [-56.16, -34.9], santiago: [-70.65, -33.45], managua: [-86.25, 12.13], tegucigalpa: [-87.2, 14.08],
+  sanSalvador: [-89.19, 13.69], hondurasSur: [-86.6, 14.0], mexico: [-99.13, 19.43], guadalajara: [-103.35, 20.67],
+  tamaulipas: [-98.3, 25.9], santaFe: [-60.7, -31.63], rosario: [-60.64, -32.95], quito: [-78.47, -0.18],
+  guayaquil: [-79.9, -2.19], livramento: [-55.53, -30.89],
+  // capa de pandillas
+  losAngeles: [-117.9, 34.05], ilhaGrande: [-44.23, -23.15], taubate: [-45.56, -23.03], medellin: [-75.57, 6.25],
+  uraba: [-76.63, 7.88], monterrey: [-100.31, 25.67], apatzingan: [-102.35, 19.09], tocoron: [-67.38, 10.08],
+  santiagoCl: [-70.65, -33.45], latacunga: [-78.62, -0.93],
+};
+
+// ─── Enlaces verificados (responden al 18/11/2026). ──
+const E = {
+  soaw: ["Organización", "SOA Watch: la Escuela de las Américas y sus egresados", "https://soaw.org/"],
+  manuales: null,
+  nogueraCol: ["Prensa", "El Colombiano: la Corte Suprema condenó a Jorge Noguera (2011)", "https://www.elcolombiano.com/historico/csj_condeno_a_jorge_noguera-JAEC_149990"],
+  nogueraPais: ["Prensa", "El País (Cali): los delitos de Jorge Noguera", "https://www.elpais.com.co/colombia/los-delitos-de-jorge-noguera-exdirector-del-das.html"],
+  noguera2017: ["Sentencia", "Corte Suprema de Colombia: nueva condena a Noguera por las «chuzadas» (2017)", "https://cortesuprema.gov.co/corte/?p=15099"],
+  pbsuccess: ["Desclasificado", "National Security Archive: CIA y asesinatos, documentos de Guatemala 1954", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB4/"],
+  frusGuat: ["Archivo", "Departamento de Estado: FRUS, Guatemala 1952-1954 (volumen retrospectivo)", "https://history.state.gov/historicaldocuments/frus1952-54Guat"],
+  ceh: ["Informe", "CEH, Guatemala: memoria del silencio, conclusiones (en inglés, PDF)", "https://www.ca1.uscourts.gov/sites/ca1/files/citations/Guatemala%20Memory%20of%20Silence%20Report%20of%20the%20Commission%20for%20Historical%20Clarification%20Conclusions%20and%20Recommendations.pdf"],
+  cicig: ["Informe", "CICIG: preguntas frecuentes, CIACS y mandato", "https://www.cicig.org/history//uploads/documents/mandato/preguntas_frecuentes.pdf"],
+  kaibiles: null,
+  terrorPj: ["Archivo", "Poder Judicial del Paraguay: 30 años del hallazgo del Archivo del Terror", "https://www.pj.gov.py/notas/23346-archivo-del-terror-30-anos-del-hallazgo-de-esta-documentacion"],
+  cvjPy: ["Informe", "Comisión de Verdad y Justicia del Paraguay, Informe final (PDF)", "https://www.dhnet.org.br/verdade/mundo/paraguai/informe_final_paraguai_paraguay.pdf"],
+  terrorHnn: ["Prensa", "History News Network: documentos del Cóndor en el Archivo del Terror", "https://www.historynewsnetwork.org/article/45861"],
+  hrwHaiti: ["Informe", "Human Rights Watch: Thirst for Justice, una década de impunidad en Haití (1996)", "https://www.hrw.org/reports/1996/Haiti.htm"],
+  olas: ["Documento", "Declaración de la OLAS, La Habana, 1967 (PDF)", "https://sitiosdememoria.uy/sites/default/files/2025-06/29/america-latina-suplemento-especial_f8-1967.pdf"],
+  che: ["Desclasificado", "National Security Archive: la muerte del Che", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB5/"],
+  bicho: ["Prensa", "Jornal Opção: el libro sobre el capitán que modernizó el jogo do bicho", "https://www.jornalopcao.com.br/colunas-e-blogs/imprensa/livro-diz-que-capitao-do-exercito-modernizou-o-jogo-do-bicho-e-produziu-uma-mafia-tropical-53592/"],
+  cvrPeru: ["Informe", "CVR del Perú: conclusiones generales", "https://www.cverdad.org.pe/ifinal/conclusiones.php"],
+  montesinosIc: null,
+  montesinos2021: ["Prensa", "Infobae: Montesinos condenado a 17 años por los secuestros del autogolpe (2021)", "https://www.infobae.com/america/peru/2021/11/19/vladimiro-montesinos-es-condenado-a-17-anos-de-prision-por-secuestro-de-periodista/"],
+  norieDoj: ["Documento", "Departamento de Justicia: declaración del fiscal general tras el veredicto (09/04/1992, PDF)", "https://justice.gov/ag/aghistory/barr/1992/04-09-1992.pdf"],
+  norieUsia: ["Prensa", "USIA: el veredicto contra Noriega (1992)", "https://irp.fas.org/news/1992/18224133-18226813.htm"],
+  uyNsa: ["Desclasificado", "National Security Archive: Uruguay", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB71/"],
+  uySitios: ["Archivo", "Sitios de Memoria Uruguay", "https://sitiosdememoria.uy/"],
+  uyIc: null,
+  pinochetFile: ["Desclasificado", "National Security Archive: The Pinochet File", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB110/"],
+  rettig: ["Informe", "Informe Rettig, Comisión Nacional de Verdad y Reconciliación (INDH)", "https://bibliotecadigital.indh.cl/items/edb83a4d-9121-48ee-8e66-09fe31e926fe"],
+  chileIc: null,
+  condorNsa: ["Desclasificado", "National Security Archive: Operación Cóndor", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB514/"],
+  kissinger: ["Desclasificado", "National Security Archive: Kissinger, Cóndor y el asesinato de Letelier", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB416/"],
+  condorMpf: ["Sentencia", "Ministerio Público Fiscal: sentencia del juicio Plan Cóndor (2016)", "https://www.fiscales.gob.ar/lesa-humanidad/operacion-condor-se-probo-la-asociacion-ilicita-y-se-impusieron-penas-de-8-a-25-anos-de-prision/"],
+  narbondo: ["Prensa", "Infobae/EFE: Brasil ejecuta la condena italiana a Narbondo (26/10/2026)", "https://www.infobae.com/america/agencias/2026/10/26/brasil-impone-30-anos-de-carcel-a-exmilitar-uruguayo-por-crimenes-de-la-operacion-condor/"],
+  nuncaMas: null,
+  gordon: ["Prensa", "La Nación: condenaron a 7 secuaces de Aníbal Gordon (2005)", "https://lanacion.com.ar/sociedad/condenaron-a-7-secuaces-de-anibal-gordon-nid696220"],
+  puccio: ["Prensa", "Página/12: el clan Puccio (2004)", "https://www.pagina12.com.ar/diario/sociedad/3-30592-2004-01-21.html"],
+  fondos: ["Informe", "Ministerio de Defensa: los fondos secretos del Batallón 601 (PDF)", "https://www.argentina.gob.ar/sites/default/files/2023/06/los_fondos_secretos.pdf"],
+  juntas: ["Archivo", "Memoria Abierta: Juicio a las Juntas Militares (1985)", "https://hacerjusticia.memoriaabierta.org.ar/ar/hito/juicio-a-las-juntas-militares"],
+  kerry: ["Documento", "Congressional Record: Kerry presenta el informe de su subcomisión (1989)", "https://irp.fas.org/congress/1989_cr/s890516-drugs.htm"],
+  contrasNsa: ["Desclasificado", "National Security Archive: la Contra, la cocaína y las operaciones encubiertas", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB2/nsaebb2.htm"],
+  honduras: ["Estudio", "Balerini Casal: la asesoría militar argentina en Honduras (2018) (PDF)", "https://dialnet.unirioja.es/descarga/articulo/6510975.pdf"],
+  slvVerdad: ["Informe", "Comisión de la Verdad, De la locura a la esperanza (1993)", "https://www.derechoshumanos.net/lesahumanidad/informes/elsalvador/informe-de-la-locura-a-la-esperanza.htm"],
+  chapultepec: ["Documento", "Acuerdo de Chapultepec (texto, Equipo Nizkor)", "https://derechos.org/intlaw/doc/slv16.html"],
+  bolCocaina: ["Prensa", "Los Tiempos: García Meza, peón de un narcogolpe internacional", "https://www.lostiempos.com/oh/actualidad/20210718/garcia-meza-peon-narcogolpe-internacional"],
+  bolJuicio: ["Prensa", "Los Tiempos: nueve años de juicio de responsabilidades a García Meza", "https://www.lostiempos.com/actualidad/pais/20210718/cronica-procesonueve-anos-duro-juicio-responsabilidades-luis-garcia-meza"],
+  dfsExc: ["Prensa", "Excélsior: Caro Quintero y 1985, el año en que se desató el narco", "https://www.excelsior.com.mx/nacional/caro-quintero-1985-ano-se-desato-el-narco/1527044"],
+  dfsCia: ["Desclasificado", "CIA Reading Room: detenidos por la desaparición del agente de la DEA (1985)", "https://www.cia.gov/readingroom/document/cia-rdp90-00965r000706710013-0"],
+  convivirHrw: ["Informe", "Human Rights Watch: Guerra sin cuartel, las Convivir (1998)", "https://www.hrw.org/legacy/spanish/informes/1998/guerra3C.html"],
+  convivirCc: ["Sentencia", "Corte Constitucional de Colombia, sentencia C-572/97 (PDF)", "https://www.andyreiter.com/wp-content/uploads/military-justice/co/Court%20Cases/Colombia%20-%201997%20-%20Constitutional%20Court%20Ruling%20C-572-97%20%5BSpanish%5D.pdf"],
+  basta: ["Informe", "Centro Nacional de Memoria Histórica: ¡Basta ya! (PDF)", "https://www.centrodememoriahistorica.gov.co/descargas/informes2013/bastaYa/basta-ya-colombia-memorias-de-guerra-y-dignidad-2016.pdf"],
+  zetas: ["Prensa", "Expansión: el origen de Los Zetas, datos de la PGR (2011)", "https://expansion.mx/nacional/2011/07/05/el-origen-de-los-zetas-brazo-armado-del-cartel-del-golfo"],
+  milicias: ["Documento", "Câmara dos Deputados: relatório de la CPI das Milícias (2008)", "https://www2.camara.leg.br/atividade-legislativa/comissoes/comissoes-permanentes/cspcco/noticias/comissao-de-seguranca-recebe-relatorio-da-cpi-das"],
+  tognoli: ["Prensa", "El Litoral: Casación confirmó la condena de Tognoli (2018)", "https://www.ellitoral.com/sucesos/casacion-confirmo-condena-ex-comisario-tognoli_0_9JAeJPHyMW.html"],
+  delFrade: ["Prensa", "Cadena 3: Del Frade, «la Argentina se convirtió en un país narco»", "https://www.cadena3.com/noticia/informados-al-regreso-rosario/del-frade-argentina-se-convirtio-en-un-pais-narco_326648"],
+  garciaLuna: ["Sentencia", "ICE (EE. UU.): García Luna condenado a más de 38 años", "https://www.ice.gov/news/releases/ex-mexican-secretary-public-security-genaro-garcia-luna-sentenced-over-38-years"],
+  soles: null,
+  metastasis: ["Prensa", "Primicias: las sentencias del caso Metástasis (2024)", "https://primicias.ec/seguridad/caso-metastasis-ecuador-sentencia-corrupcion-justicia-wilman-teran-84004"],
+  cidhEc: ["Prensa", "Primicias: el informe de la CIDH sobre las cárceles de Ecuador (2022)", "https://primicias.ec/noticias/politica/cidh-informe-crisis-carceles"],
+  vistazo: ["Prensa", "Vistazo: la CIDH y los 591 presos muertos desde 2020", "https://www.vistazo.com/amp/actualidad/nacional/2025-01-14-cidh-insta-ecuador-medidas-violencia-carceles-591-presos-muertos-2020-FC8620373"],
+  // Regímenes autoritarios civiles (agregados el 18/11/2026)
+  vdem: ["Datos", "Our World in Data: tipo de régimen por país y año, clasificación Regímenes del Mundo de V-Dem (1789-2025)", "https://ourworldindata.org/grapher/political-regime"],
+  vdemDatos: ["Datos", "V-Dem: la base de datos y su metodología", "https://www.v-dem.net/data/the-v-dem-dataset/"],
+  causa1: ["Documento", "La Hora Popular (16/07/1989): Fidel Castro ante el Consejo de Estado sobre la Causa n.º 1 (PDF escaneado, 31 MB)", "https://sitiosdememoria.uy/sites/default/files/2026-08/19/texto-integro_f16-7-1989.pdf"],
+  ochoa: ["Estudio", "GlobalSecurity: el caso Ochoa y la purga del Ministerio del Interior (en inglés)", "https://www.globalsecurity.org/military/world/cuba/ochoa.htm"],
+  venOnu: ["Informe", "Human Rights Watch: la misión de la ONU encuentra crímenes de lesa humanidad en Venezuela (16/09/2020)", "https://www.hrw.org/news/2020/09/16/venezuela-un-inquiry-finds-crimes-against-humanity"],
+  maduroNy: ["Prensa", "Courthouse News: Maduro, acusado de narcoterrorismo, comparece en Nueva York (05/01/2026)", "https://www.courthousenews.com/maduro-arraigned-on-us-narco-terrorism-charges/"],
+  ghren: ["Informe", "ONU Ginebra: el Grupo de Expertos concluye que en Nicaragua se cometen crímenes de lesa humanidad (02/03/2023)", "https://www.globalsecurity.org/military/library/news/2023/03/mil-230302-unhrc01.htm"],
+  nicAmnistia: ["Informe", "Amnistía Internacional: Nicaragua ante el Consejo de Derechos Humanos (2023, PDF)", "https://www.amnesty.org/en/wp-content/uploads/2023/03/AMR4366132023ENGLISH.pdf"],
+  johDoj: null,
+  johIc: null,
+  johIndulto: ["Prensa", "Al Jazeera: Hernández sale de prisión tras el indulto de Trump (02/12/2025)", "https://www.aljazeera.com/news/2025/12/2/juan-orlando-hernandez-freed-after-trumps-full-and-complete-pardon"],
+  // Capa de pandillas (19/11/2026)
+  gLessing: ["Estudio", "Lessing (U. de Chicago): Counterproductive Punishment, cómo las pandillas de las cárceles erosionan al Estado (2017)", "https://cpost.uchicago.edu/publications/counterproductive_punishment_how_prison_gangs_undermine_state_authority/"],
+  gRenta: ["Estudio", "NBER: Market Structure and Extortion, 50.000 pagos de extorsión en El Salvador", "https://www.nber.org/papers/w28299"],
+  gMs13: null,
+  gTesoro: ["Documento", "Tesoro de EE. UU.: sanciones por la negociación secreta con líderes de pandillas presos (08/12/2021)", "https://home.treasury.gov/news/press-releases/jy0519"],
+  gWola: ["Informe", "WOLA: tres años del régimen de excepción en El Salvador (27/03/2025)", "https://www.wola.org/es/analysis/encarcelamiento-masivo-y-deterioro-democratico-3-anos-del-regimen-de-excepcion-en-el-salvador/"],
+  gCustodia: ["Prensa", "CRHoy (EFE): más de 450 muertes en cárceles de El Salvador", "https://crhoy.com/mundo/denuncian-mas-de-450-muertes-en-carceles-de-el-salvador/"],
+  gCv: null,
+  gPcc: null,
+  gGeni: null,
+  gMilicias: ["Estudio", "Böll / GENI / Observatório das Metrópoles: la expansión de las milicias de Río (2021, PDF)", "https://br.boell.org/sites/default/files/2021-04/boll_expansao_milicias_RJ_FINAL.pdf"],
+  gEcuCarcel: null,
+  gEcuExt: ["Prensa", "Primicias: las denuncias por extorsión en Ecuador, de 1.616 a 16.130 (18/09/2026)", "https://www.primicias.ec/seguridad/extorsiones-dispararon-ecuador-ultimos-seis-anos-llegaron-16-130-casos-2025-estudio-132905/"],
+  gTren: ["Prensa", "Infobae: el Tren de Aragua, nacido en la cárcel de Tocorón (18/03/2025)", "https://www.infobae.com/venezuela/2025/03/18/el-tren-de-aragua-la-banda-criminal-trasnacional-nacida-en-la-prision-venezolana-de-tocoron/"],
+  gTrenBbc: ["Prensa", "T13 (BBC Mundo): cómo el Tren de Aragua se expandió desde una cárcel", "https://www.t13.cl/noticia/mundo/feed-bbc/como-el-temido-tren-de-aragua-logro-expandir-sus-tentaculos-por-america-latina-desde-una-carcel"],
+  gPeru: null,
+  gPeruAfp: ["Prensa", "El Espectador (AFP): transportistas asesinados, comercios y colegios cerrados en Perú (10/06/2025)", "https://www.elespectador.com/mundo/america/extorsion-en-peru-transportistas-asesinados-comercios-y-colegios-cerrados/"],
+  gHnd: ["Prensa", "El Heraldo: 304.000 hogares víctimas de extorsión en Honduras, según la ASJ", "https://www.elheraldo.hn/honduras/al-menos-304-mil-hogares-victimas-extorsion-honduras-segun-asj-OA22996976"],
+  gGtm: ["Prensa", "La Hora: 25.961 denuncias de extorsión en Guatemala en 2025 (13/05/2026)", "https://lahora.gt/?p=966210"],
+  gZetas: null,
+  gFrag: ["Prensa", "Expansión: la fragmentación de los cárteles, de 18 a 44 organizaciones (01/03/2023)", "https://politica.expansion.mx/mexico/2023/03/01/fragmentacion-carteles-mexico-ha-acentuado-violencia"],
+  gTemplarios: ["Prensa", "La Opinión: los Templarios cobran dos pesos por kilo de limón (05/07/2013)", "https://laopinion.com/2013/07/05/narcos-extorsionan-y-asesinan-a-productores-en-michoacan/"],
+  gMilenio: ["Prensa", "Milenio: cinco grupos extorsionan a limoneros y aguacateros de Michoacán (15/12/2025)", "https://amp.milenio.com/policia/extorsion-en-michoacan-puntos-clave-problematica-carteles-de-drogas"],
+  gBravo: ["Prensa", "Expansión: asesinan al líder limonero que denunciaba el cobro de piso (20/10/2025)", "https://politica.expansion.mx/estados/2025/10/20/lider-de-limoneros-de-michoacan-es-asesinado-encabezo-denuncia-contra-extorsiones"],
+  gAnimal: ["Datos", "Grupo Animal: 11.081 víctimas de extorsión en 2025 (SESNSP) y 14,1 % de hogares (ENSU)", "https://grupoanimal.mx/explicaciones/extorsion-cifra-mas-alta-en-una-decada"],
+  gOficina: ["Prensa", "El Tiempo (Proceso): cómo funciona la Oficina de Envigado (2018)", "https://www.eltiempo.com/colombia/medellin/como-funciona-la-oficina-de-envigado-heredera-del-cartel-de-medellin-261046"],
+  gGangRule: ["Estudio", "NBER: Gang Rule, el gobierno de los combos en Medellín (Blattman, Duncan, Lessing y Tobón)", "https://www.nber.org/papers/w28458"],
+  gUrab: null,
+  gFip: null,
+  gVanguardia: ["Prensa", "Vanguardia: el Clan del Golfo suspende el «impuesto de guerra» como gesto al nuevo gobierno (30/06/2026)", "https://www.vanguardia.com/colombia/2026/06/30/clan-del-golfo-frena-extorsiones-como-gesto-al-nuevo-gobierno/"],
+  gHaiti: null,
+  gFides: ["Prensa", "Agencia Fides: el surgimiento de las pandillas en Haití", "https://fides.org/en/news/74701-AMERICA_HAITI_The_emergence_of_criminal_gangs_in_Haiti"],
+  gPanel: ["Informe", "Le Nouvelliste: el panel de expertos de la ONU sobre políticos y élites que financian pandillas (10/2023)", "https://lenouvelliste.com/en/article/244989/politicians-and-financial-figures-allegedly-backing-gangs-in-haiti-as-per-un-experts"],
+  gSaline: ["Informe", "MINUJUSTH / ACNUDH: informe sobre La Saline (2018)", "https://minujusth.unmissions.org/en/node/24206"],
+  gUpi: null,
+  gOnudd: ["Prensa", "OPB (AP): la ONUDD estima que las pandillas controlan el 90 % de Puerto Príncipe (03/07/2025)", "https://www.opb.org/article/2025/07/03/haiti-s-gangs-have-near-total-control-of-the-capital/"],
+  gGsf: ["Prensa", "PassBlue: llega la Fuerza de Supresión de Pandillas (21/05/2026)", "https://passblue.com/2026/05/21/the-new-un-backed-anti-gang-force-is-finally-arriving-in-haiti-as-violence-surges/"],
+};
+
+// ─── Episodios ────────────────────────────────────────────────────────
+// tipo: dictadura · hito · estructura (una estructura opaca que se reconvierte o cae)
+// prueba: Probado · Documentado · Afirmado (etiquetas del informe) · Por verificar (dato conocido, falta la fuente) · Sin relevar
+const EPISODIOS = [
+  { anio: 1946, tipo: "hito", pais: "PAN", lugar: L.zonaCanal,
+    titulo: "EE. UU. abre en Panamá un centro para entrenar militares latinoamericanos",
+    fechas: "1946 · Escuela de las Américas desde 1963 · Fort Benning desde 1984",
+    resumen: "Funciona en la Zona del Canal, bajo control de EE. UU. En 1984, tras los tratados Torrijos-Carter, se muda a Georgia.",
+    protagonistas: "Ejército de EE. UU.",
+    estructura: "Formación en contrainsurgencia, inteligencia e interrogatorio para oficiales de toda la región.",
+    despues: "Por sus aulas pasaron oficiales que después dirigieron golpes y aparatos de represión. Falta armar la lista con fuente.",
+    prueba: "Sin relevar", enlaces: [E.soaw, E.manuales],
+    flechas: [{ de: L.zonaCanal, a: L.fortBenning, texto: "1984: se muda" }] },
+
+  { anio: 1948, tipo: "dictadura", pais: "VEN", lugar: L.caracas, periodo: [1948, 1957],
+    titulo: "Golpe en Venezuela: empieza la década militar de Pérez Jiménez",
+    fechas: "24/11/1948 – 23/01/1958",
+    resumen: "Una junta militar derroca a Rómulo Gallegos. Pérez Jiménez gobierna desde 1952 hasta que lo derriba una rebelión cívico-militar.",
+    protagonistas: "Marcos Pérez Jiménez · Carlos Delgado Chalbaud · Pedro Estrada",
+    estructura: "Seguridad Nacional: la policía política, dirigida por Pedro Estrada.",
+    despues: "Se disolvió con la caída del régimen en 1958. No relevamos todavía qué pasó con su gente.",
+    prueba: "Sin relevar", enlaces: [] },
+
+  { anio: 1952, tipo: "dictadura", pais: "CUB", lugar: L.habana, periodo: [1952, 1958],
+    titulo: "Batista toma el poder en Cuba con un golpe",
+    fechas: "10/03/1952 – 01/01/1959",
+    resumen: "Fulgencio Batista interrumpe las elecciones de 1952. Cae ante la guerrilla del Movimiento 26 de Julio.",
+    protagonistas: "Fulgencio Batista",
+    estructura: "BRAC (Buró de Represión de Actividades Comunistas, 1955), creado con apoyo de EE. UU., y el SIM, la inteligencia militar.",
+    despues: "Buena parte de sus cuadros se exilió en 1959. Sin relevar.",
+    prueba: "Sin relevar", enlaces: [] },
+
+  { anio: 1953, tipo: "dictadura", pais: "COL", lugar: L.bogota, periodo: [1953, 1957],
+    titulo: "Rojas Pinilla gobierna Colombia y crea un servicio de inteligencia",
+    fechas: "13/06/1953 – 10/05/1957",
+    resumen: "Llega con un golpe en plena Violencia y deja el poder a una junta militar en 1957.",
+    protagonistas: "Gustavo Rojas Pinilla",
+    estructura: "SIC (Servicio de Inteligencia Colombiano), creado en 1953. En 1960 pasa a llamarse DAS.",
+    despues: "El DAS duró hasta 2011. Ver el episodio de 2011: su exdirector fue condenado por entregar información a los paramilitares.",
+    prueba: "Probado", enlaces: [E.nogueraCol] },
+
+  { anio: 1954, tipo: "dictadura", pais: "GTM", lugar: L.guatemala, periodo: [1954, 1985], pausa: [1967, 1969],
+    titulo: "Cae Árbenz en Guatemala con un golpe apoyado por la CIA",
+    fechas: "27/06/1954 – 01/07/1966 · 01/07/1970 – 14/01/1986 · conflicto armado 1960 – 29/12/1996",
+    resumen: "La operación PBSuccess derroca al presidente electo. Siguen tres décadas de gobiernos militares, con una pausa civil bajo tutela militar (Julio César Méndez Montenegro, 1966-1970), y una guerra interna de 36 años.",
+    protagonistas: "Jacobo Árbenz · Carlos Castillo Armas · Efraín Ríos Montt (1982-1983)",
+    estructura: "Aparatos de inteligencia y contrainsurgencia del Ejército durante el conflicto armado.",
+    despues: "Siguieron activos después de la paz de 1996: ver el episodio de ese año.",
+    prueba: "Probado", enlaces: [E.pbsuccess, E.frusGuat, E.ceh],
+    flechas: [{ de: L.washington, a: L.guatemala, texto: "CIA: operación PBSuccess" }] },
+
+  { anio: 1954, tipo: "dictadura", pais: "PRY", lugar: L.asuncion, periodo: [1954, 1988],
+    titulo: "Stroessner en Paraguay: 35 años de dictadura",
+    fechas: "04/05/1954 – 03/02/1989",
+    resumen: "Alfredo Stroessner llega con un golpe y se mantiene con elecciones sin competencia. Lo derroca su consuegro, el general Andrés Rodríguez.",
+    protagonistas: "Alfredo Stroessner · Andrés Rodríguez · Pastor Coronel (Investigaciones)",
+    estructura: "La Técnica (Dirección Nacional de Asuntos Técnicos), oficina de inteligencia montada con asesoría de EE. UU., y el Departamento de Investigaciones de la Policía.",
+    despues: "En 1992 aparecieron los Archivos del Terror, con documentos de la represión y del Cóndor. Qué pasó con los aparatos después de 1989: sin relevar.",
+    prueba: "Sin relevar", enlaces: [E.terrorPj, E.cvjPy, E.terrorHnn] },
+
+  { anio: 1957, tipo: "dictadura", pais: "HTI", lugar: L.puertoPrincipe, periodo: [1957, 1985],
+    titulo: "Los Duvalier en Haití: padre e hijo",
+    fechas: "22/10/1957 – 07/02/1986",
+    resumen: "François Duvalier gana la elección de 1957 y se declara presidente vitalicio. Lo sucede su hijo Jean-Claude hasta que huye en 1986.",
+    protagonistas: "François «Papa Doc» Duvalier · Jean-Claude «Baby Doc» Duvalier",
+    estructura: "Tonton Macoutes (Voluntarios de la Seguridad Nacional): una milicia que respondía al presidente y no al Ejército.",
+    despues: "Se disolvieron formalmente en 1986. Ex macoutes aparecen después en grupos paramilitares como el FRAPH (1993-1994), cuyo jefe terminó protegido en EE. UU.",
+    prueba: "Documentado", enlaces: [E.hrwHaiti] },
+
+  { anio: 1959, tipo: "hito", pais: "CUB", lugar: L.habana,
+    titulo: "Triunfa la Revolución cubana",
+    fechas: "01/01/1959",
+    resumen: "Fidel Castro llega al poder. Para EE. UU. y los ejércitos de la región, el enemigo pasa a ser interno: es uno de los puntos de partida de la doctrina de seguridad nacional que justifica los golpes de las décadas siguientes.",
+    protagonistas: "Fidel Castro · Ernesto Guevara · Movimiento 26 de Julio",
+    estructura: "No aplica a este hito.",
+    despues: "1961: Bahía de Cochinos y la Alianza para el Progreso. 1967: la OLAS declara que hacer la revolución es «un derecho y un deber de los pueblos de América Latina».",
+    prueba: "Documentado", enlaces: [E.olas, E.che] },
+
+  { anio: 1959, tipo: "autoritario", pais: "CUB", lugar: L.habana, periodo: [1959, 2026],
+    titulo: "Cuba: la revolución se convierte en un régimen de partido único",
+    fechas: "01/01/1959 – hoy · Partido Comunista desde 1965 · partido único por la Constitución de 1976",
+    resumen: "No se convocan las elecciones prometidas y desde 1965 gobierna un solo partido, sin elecciones competitivas. V-Dem lo clasifica como autocracia cerrada todos los años desde 1959.",
+    protagonistas: "Fidel Castro · Raúl Castro · Miguel Díaz-Canel (desde 2018)",
+    estructura: "Ministerio del Interior (MININT, 1961), con la Seguridad del Estado y la inteligencia exterior, y los Comités de Defensa de la Revolución (CDR, 1960) en cada cuadra.",
+    despues: "Causa n.º 1 de 1989: un tribunal militar condenó al general Arnaldo Ochoa, al coronel Antonio de la Guardia y a otros dos oficiales por tráfico de drogas, diamantes y contrabando, con una red montada en buena parte dentro del MININT. Los cuatro fueron fusilados en julio de 1989 y el ministerio fue purgado. Lo probó el propio Estado, pero observadores extranjeros lo llamaron un juicio armado; si la cúpula sabía sigue en discusión.",
+    prueba: "Documentado", enlaces: [E.vdem, E.causa1, E.ochoa] },
+
+  { anio: 1964, tipo: "dictadura", pais: "BRA", lugar: L.brasilia, periodo: [1964, 1984],
+    titulo: "Golpe en Brasil: 21 años de gobiernos militares",
+    fechas: "31/03/1964 – 15/03/1985",
+    resumen: "Los militares derrocan a João Goulart. El AI-5 (1968) cierra el Congreso y suspende garantías. La transición termina con Sarney en 1985.",
+    protagonistas: "Castelo Branco · Costa e Silva · Médici · Geisel · Figueiredo",
+    estructura: "SNI (Serviço Nacional de Informações, 1964) y los DOI-CODI (1970), centros de inteligencia y tortura del Ejército.",
+    despues: "La Ley de Amnistía de 1979 cubrió a los represores. El excapitán Ailton Guimarães Jorge, de la represión, pasó a ser uno de los jefes del jogo do bicho en Río; en 1993 fue condenado junto con otros 13 banqueros del juego.",
+    prueba: "Documentado", enlaces: [E.bicho] },
+
+  { anio: 1966, tipo: "dictadura", pais: "ARG", lugar: L.buenosAires, periodo: [1966, 1972],
+    titulo: "Onganía y la «Revolución Argentina»",
+    fechas: "28/06/1966 – 25/05/1973",
+    resumen: "Golpe contra Arturo Illia. Le siguen Levingston y Lanusse, hasta la vuelta del peronismo en 1973.",
+    protagonistas: "Juan Carlos Onganía · Roberto Levingston · Alejandro Lanusse",
+    estructura: "SIDE (inteligencia del Estado) y los servicios de inteligencia de cada fuerza.",
+    despues: "Los mismos servicios siguen activos en la etapa siguiente: Triple A (1973-1976) y la dictadura de 1976.",
+    prueba: "Sin relevar", enlaces: [] },
+
+  { anio: 1968, tipo: "dictadura", pais: "PER", lugar: L.lima, periodo: [1968, 1979],
+    titulo: "Velasco Alvarado: un gobierno militar reformista en Perú",
+    fechas: "03/10/1968 – 28/07/1980",
+    resumen: "Golpe contra Belaúnde. Reforma agraria y nacionalizaciones. Desde 1975 gobierna Morales Bermúdez, que entrega el poder en 1980.",
+    protagonistas: "Juan Velasco Alvarado · Francisco Morales Bermúdez",
+    estructura: "SIN (Servicio de Inteligencia Nacional), creado en 1960.",
+    despues: "El SIN sobrevivió a la transición y en los 90 fue el centro del poder: ver el episodio de 1992.",
+    prueba: "Sin relevar", enlaces: [E.cvrPeru] },
+
+  { anio: 1968, tipo: "dictadura", pais: "PAN", lugar: L.panama, periodo: [1968, 1989],
+    titulo: "Torrijos toma Panamá; su jefe de inteligencia, Noriega, lo sucede",
+    fechas: "11/10/1968 – 20/12/1989",
+    resumen: "La Guardia Nacional derroca a Arnulfo Arias. Torrijos muere en 1981 y desde 1983 manda Noriega, hasta la invasión de EE. UU.",
+    protagonistas: "Omar Torrijos · Manuel Antonio Noriega",
+    estructura: "G-2, la inteligencia de la Guardia Nacional (luego Fuerzas de Defensa), dirigida por Noriega.",
+    despues: "El jefe de inteligencia llegó a gobernar el país. Tras la invasión de diciembre de 1989, un jurado de Miami lo declaró culpable el 9 de abril de 1992 de ocho cargos de narcotráfico y asociación ilícita.",
+    prueba: "Probado", enlaces: [E.norieDoj, E.norieUsia],
+    flechas: [{ de: L.washington, a: L.panama, texto: "1989: invasión" }] },
+
+  { anio: 1971, tipo: "dictadura", pais: "BOL", lugar: L.laPaz, periodo: [1971, 1977],
+    titulo: "Banzer en Bolivia",
+    fechas: "21/08/1971 – 21/07/1978",
+    resumen: "Hugo Banzer derroca a Juan José Torres. Bolivia venía de gobiernos militares desde 1964.",
+    protagonistas: "Hugo Banzer",
+    estructura: "Ministerio del Interior y sus servicios de inteligencia.",
+    despues: "Bolivia entra al Plan Cóndor en 1975. Sin relevar.",
+    prueba: "Sin relevar", enlaces: [] },
+
+  { anio: 1973, tipo: "dictadura", pais: "URY", lugar: L.montevideo, periodo: [1973, 1984],
+    titulo: "Golpe en Uruguay: Bordaberry disuelve el Parlamento",
+    fechas: "27/06/1973 – 01/03/1985",
+    resumen: "El presidente electo cierra el Parlamento con apoyo militar. Los militares lo desplazan en 1976 y gobiernan hasta 1985.",
+    protagonistas: "Juan María Bordaberry · Gregorio Álvarez",
+    estructura: "OCOA (Organismo Coordinador de Operaciones Antisubversivas) y el SID (Servicio de Información de Defensa).",
+    despues: "La Ley de Caducidad (1986) frenó los juicios. Uruguay tiene hoy pocos homicidios: posible caso de control para la tesis.",
+    prueba: "Sin relevar", enlaces: [E.uyNsa, E.uySitios, E.uyIc] },
+
+  { anio: 1973, tipo: "dictadura", pais: "CHL", lugar: L.santiago, periodo: [1973, 1989],
+    titulo: "Golpe en Chile: Pinochet derroca a Allende",
+    fechas: "11/09/1973 – 11/03/1990",
+    resumen: "Bombardeo de La Moneda y 17 años de dictadura. Pinochet pierde el plebiscito de 1988 y entrega el poder a Aylwin.",
+    protagonistas: "Augusto Pinochet · Manuel Contreras (DINA)",
+    estructura: "DINA (1974-1977), dirigida por Contreras, y su reemplazo, la CNI (1977-1990).",
+    despues: "La CNI se disolvió en 1990. Contreras fue condenado en 1993 por el asesinato de Letelier. Qué hizo su gente después: sin relevar. Chile es candidato a caso de control.",
+    prueba: "Sin relevar", enlaces: [E.pinochetFile, E.rettig, E.chileIc],
+    flechas: [{ de: L.santiago, a: L.buenosAires, texto: "1974: asesinato de Prats" }] },
+
+  { anio: 1975, tipo: "hito", pais: "CHL", lugar: L.santiago, area: ["CHL", "ARG", "URY", "PRY", "BOL", "BRA"],
+    titulo: "Operación Cóndor: las dictaduras coordinan la represión",
+    fechas: "25/11/1975 · Brasil se suma en 1976; Perú y Ecuador, en 1978",
+    resumen: "Reunión de inteligencia en Santiago convocada por la DINA. Los servicios se pasan información, secuestran y trasladan prisioneros entre países y llegan a matar fuera de la región.",
+    protagonistas: "Manuel Contreras · servicios de Chile, Argentina, Uruguay, Paraguay y Bolivia",
+    estructura: "Una red entre aparatos de inteligencia, sin control de ningún Estado ni de un tribunal.",
+    despues: "Los Archivos del Terror (Paraguay, 1992) documentan el sistema. En 2016 un tribunal federal de Buenos Aires probó la asociación ilícita y condenó a 15 acusados.",
+    prueba: "Probado", enlaces: [E.condorNsa, E.kissinger, E.condorMpf, E.terrorHnn],
+    flechas: [
+      { de: L.santiago, a: L.buenosAires }, { de: L.santiago, a: L.montevideo }, { de: L.santiago, a: L.asuncion },
+      { de: L.santiago, a: L.laPaz }, { de: L.santiago, a: L.brasilia },
+      { de: L.santiago, a: L.washington, texto: "1976: asesinato de Letelier" },
+    ] },
+
+  { anio: 1976, tipo: "dictadura", pais: "ARG", lugar: L.buenosAires, periodo: [1976, 1983],
+    titulo: "Golpe en la Argentina: el Proceso",
+    fechas: "24/03/1976 – 10/12/1983",
+    resumen: "Las tres fuerzas derrocan a Isabel Perón. Centros clandestinos, desaparición forzada y la guerra de Malvinas en 1982.",
+    protagonistas: "Jorge Rafael Videla · Emilio Massera · Orlando Agosti · Roberto Viola · Leopoldo Galtieri · Reynaldo Bignone",
+    estructura: "Batallón de Inteligencia 601, SIDE y centros clandestinos como la ESMA. Fondos reservados sin control.",
+    despues: "La banda de Aníbal Gordon (SIDE y Triple A) siguió con secuestros extorsivos en 1982-1984; siete condenados en 2005. El clan Puccio hizo cuatro secuestros entre 1982 y 1985; su vínculo con la SIDE está afirmado.",
+    prueba: "Probado", enlaces: [E.nuncaMas, E.gordon, E.puccio, E.fondos],
+    flechas: [{ de: L.buenosAires, a: L.tegucigalpa, texto: "asesores en Honduras" }] },
+
+  { anio: 1979, tipo: "dictadura", pais: "NIC", lugar: L.managua, periodo: [1945, 1978],
+    titulo: "Cae Somoza; la Guardia Nacional se convierte en la Contra",
+    fechas: "Dinastía Somoza 1937 – 19/07/1979",
+    resumen: "La revolución sandinista termina con 42 años de la familia Somoza en el poder.",
+    protagonistas: "Anastasio Somoza Debayle · FSLN",
+    estructura: "Guardia Nacional: ejército y policía a la vez, leal a la familia Somoza.",
+    despues: "Ex guardias forman el núcleo de la Contra (FDN), financiada por EE. UU. y asesorada por militares argentinos desde Honduras. El informe Kerry (1989) documentó vínculos de redes de la Contra con el narcotráfico.",
+    prueba: "Documentado", enlaces: [E.kerry, E.contrasNsa, E.honduras],
+    flechas: [{ de: L.washington, a: L.hondurasSur, texto: "financia la Contra" }, { de: L.hondurasSur, a: L.managua }] },
+
+  { anio: 1979, tipo: "dictadura", pais: "SLV", lugar: L.sanSalvador, periodo: [1945, 1983],
+    titulo: "Golpe en El Salvador y guerra civil",
+    fechas: "Militares desde 1931 · golpe 15/10/1979 · guerra 1980 – 16/01/1992",
+    resumen: "Una junta cívico-militar no frena la violencia: asesinato de monseñor Romero (1980), masacre de El Mozote (1981) y doce años de guerra contra el FMLN.",
+    protagonistas: "Juntas de gobierno · Roberto D'Aubuisson · FMLN",
+    estructura: "Escuadrones de la muerte ligados a la Guardia Nacional y la Policía de Hacienda, y batallones como el Atlacatl.",
+    despues: "Los Acuerdos de Paz de 1992 disolvieron esos cuerpos: ver el episodio de 1992.",
+    prueba: "Sin relevar", enlaces: [E.slvVerdad] },
+
+  { anio: 1980, tipo: "dictadura", pais: "BOL", lugar: L.laPaz, periodo: [1980, 1982],
+    titulo: "El golpe de la cocaína en Bolivia",
+    fechas: "17/07/1980 – 04/08/1981 · militares hasta 10/10/1982",
+    resumen: "García Meza toma el poder con apoyo de narcotraficantes. Es el caso más claro del informe: el negocio financia al aparato.",
+    protagonistas: "Luis García Meza · Luis Arce Gómez · Roberto Suárez",
+    estructura: "Ministerio del Interior de Arce Gómez y grupos paramilitares.",
+    despues: "En 1993 la Corte Suprema de Bolivia condenó a García Meza y a Arce Gómez a 30 años sin derecho a indulto, tras nueve años de juicio de responsabilidades. La asesoría argentina al golpe está afirmada.",
+    prueba: "Probado", enlaces: [E.bolCocaina, E.bolJuicio],
+    flechas: [{ de: L.buenosAires, a: L.laPaz, texto: "asesoría argentina (afirmado)" }] },
+
+  // ─── Transición y después ───
+  { anio: 1985, tipo: "hito", pais: "ARG", lugar: L.buenosAires,
+    titulo: "Juicio a las Juntas: la justicia civil condena a los comandantes",
+    fechas: "22/04/1985 – 09/12/1985",
+    resumen: "La Cámara Federal da por probado el plan criminal de la dictadura y condena a cinco de los nueve comandantes. Mientras tanto, la banda de Gordon todavía secuestraba por dinero.",
+    protagonistas: "Cámara Federal porteña · fiscal Julio Strassera",
+    estructura: "Es el caso opuesto: un Estado que juzga a sus propios aparatos.",
+    despues: "Punto Final (1986) y Obediencia Debida (1987) frenaron los juicios. Se anularon en 2003 y los juicios se reabrieron desde 2006. Es el contraste que pide la predicción P3 de la tesis.",
+    prueba: "Probado", enlaces: [E.juntas, E.nuncaMas] },
+
+  { anio: 1985, tipo: "estructura", pais: "MEX", lugar: L.guadalajara,
+    titulo: "México disuelve la DFS después del caso Camarena",
+    fechas: "Febrero de 1985: secuestro del agente de la DEA · 1985: disolución de la DFS",
+    resumen: "La DFS era la policía política del Estado mexicano. El crimen de Enrique Camarena destapó que protegía al cartel de Guadalajara.",
+    protagonistas: "Rafael Caro Quintero · Miguel Ángel Félix Gallardo · Dirección Federal de Seguridad",
+    estructura: "DFS: policía política con credenciales que abrían cualquier puerta.",
+    despues: "Caro Quintero tenía una credencial de la DFS. Al disolverse, su gente quedó libre en el momento en que crecían los carteles: es el camino 1 de la tesis.",
+    prueba: "Documentado", enlaces: [E.dfsExc, E.dfsCia] },
+
+  { anio: 1992, tipo: "dictadura", pais: "PER", lugar: L.lima, periodo: [1992, 2000],
+    titulo: "Autogolpe de Fujimori; Montesinos y el SIN en el centro del poder",
+    fechas: "05/04/1992 – noviembre de 2000",
+    resumen: "Fujimori cierra el Congreso y reorganiza la Justicia con apoyo militar. El régimen cae en 2000 tras los «vladivideos», que mostraban sobornos pagados por Montesinos.",
+    protagonistas: "Alberto Fujimori · Vladimiro Montesinos · Nicolás de Bari Hermoza",
+    estructura: "SIN (Servicio de Inteligencia Nacional), manejado por Montesinos entre 1990 y 2000.",
+    despues: "Montesinos fue condenado en 2021 a 17 años por los secuestros del autogolpe. El narco «Vaticano» declaró que le pagaba US$ 50.000 por mes, pero nunca lo condenaron por narcotráfico.",
+    prueba: "Afirmado", enlaces: [E.montesinos2021, E.montesinosIc, E.cvrPeru] },
+
+  { anio: 1992, tipo: "hito", pais: "SLV", lugar: L.sanSalvador,
+    titulo: "Paz en El Salvador: se disuelven los cuerpos de seguridad",
+    fechas: "16/01/1992 · Comisión de la Verdad: 1993",
+    resumen: "El acuerdo de Chapultepec termina la guerra, disuelve la Guardia Nacional y la Policía de Hacienda y crea una Policía Nacional Civil.",
+    protagonistas: "Gobierno de Cristiani · FMLN · Naciones Unidas",
+    estructura: "Cuerpos de seguridad disueltos por acuerdo, con supervisión de la ONU.",
+    despues: "En los años siguientes crecen las maras con jóvenes deportados de EE. UU. y armas de la guerra. Si se depuró o no a los cuerpos disueltos es clave para la tesis: sin relevar.",
+    prueba: "Por verificar", enlaces: [E.chapultepec, E.slvVerdad] },
+
+  { anio: 1994, tipo: "estructura", pais: "COL", lugar: L.bogota,
+    titulo: "Colombia legaliza las Convivir, cooperativas armadas de seguridad",
+    fechas: "Decreto 356 de 1994 · Corte Constitucional C-572/97 · AUC desde 1997",
+    resumen: "El Estado autoriza a civiles a armarse para colaborar con la Fuerza Pública. La Corte las avala en 1997 con advertencias.",
+    protagonistas: "Gobierno nacional · gobernaciones · Autodefensas Unidas de Colombia",
+    estructura: "Las Convivir: legales, armadas y con poco control.",
+    despues: "Varias Convivir pasaron a las Autodefensas Unidas de Colombia (AUC), creadas en 1997.",
+    prueba: "Documentado", enlaces: [E.convivirHrw, E.convivirCc, E.basta] },
+
+  { anio: 1996, tipo: "estructura", pais: "GTM", lugar: L.guatemala,
+    titulo: "Paz en Guatemala; los aparatos clandestinos siguen activos",
+    fechas: "29/12/1996 · CICIG: acuerdo de 2006, trabajó de 2007 a 2019",
+    resumen: "Termina el conflicto armado. El Estado reconoce que los aparatos de la guerra siguen operando y pide ayuda a la ONU para combatirlos.",
+    protagonistas: "Gobierno de Guatemala · Naciones Unidas · CICIG",
+    estructura: "CIACS: cuerpos ilegales y aparatos clandestinos de seguridad.",
+    despues: "El acuerdo de 1994 obligó a desmantelarlos y en 2006 se creó la CICIG porque seguían activos. Es el caso de la tesis con prueba más fuerte: lo reconoce el propio Estado.",
+    prueba: "Probado", enlaces: [E.cicig, E.ceh] },
+
+  { anio: 1999, tipo: "estructura", pais: "MEX", lugar: L.tamaulipas,
+    titulo: "Los Zetas: fuerzas especiales que se pasan al narco",
+    fechas: "Fines de los años 90",
+    resumen: "Desertores del GAFE, una unidad de élite del Ejército mexicano, se convierten en el brazo armado del Cártel del Golfo y después en un cartel propio.",
+    protagonistas: "Ex integrantes del GAFE · Cártel del Golfo",
+    estructura: "Fuerzas especiales entrenadas en contrainsurgencia.",
+    despues: "Según cables de la DEA de 2009-2010, los Zetas también reclutaron ex kaibiles guatemaltecos.",
+    prueba: "Documentado", enlaces: [E.zetas, E.kaibiles],
+    flechas: [{ de: L.guatemala, a: L.tamaulipas, texto: "ex kaibiles (cables DEA)" }] },
+
+  { anio: 2002, tipo: "autoritario", pais: "VEN", lugar: L.caracas, periodo: [2002, 2026],
+    titulo: "Venezuela: de la democracia a la autocracia electoral",
+    fechas: "Chávez asume: 02/02/1999 · V-Dem: autocracia electoral desde 2002 · Maduro desde 2013 · capturado por EE. UU.: 03/01/2026",
+    resumen: "Chávez llega por elecciones. Con el tiempo se debilitan los controles: justicia, órgano electoral y prensa quedan bajo el gobierno. V-Dem clasifica a Venezuela como autocracia electoral todos los años desde 2002; hay elecciones, pero sin garantías.",
+    protagonistas: "Hugo Chávez · Nicolás Maduro · Diosdado Cabello",
+    estructura: "SEBIN (la inteligencia civil, ex DISIP) y la DGCIM (contrainteligencia militar).",
+    despues: "En 2020 la misión de la ONU encontró motivos razonables para creer que se cometieron crímenes de lesa humanidad y pidió investigar a más de 45 funcionarios del SEBIN y la DGCIM. Ese año EE. UU. acusó a la cúpula por el Cártel de los Soles (ver 2020). El 03/01/2026 fuerzas de EE. UU. capturaron a Maduro; en Nueva York se declaró inocente y el juicio sigue abierto.",
+    prueba: "Documentado", enlaces: [E.vdem, E.venOnu, E.maduroNy, E.soles] },
+
+  { anio: 2007, tipo: "autoritario", pais: "NIC", lugar: L.managua, periodo: [1979, 2026], pausa: [1990, 2006],
+    titulo: "Nicaragua: Ortega vuelve al poder y el régimen se cierra",
+    fechas: "FSLN: 19/07/1979 – 25/04/1990 · Ortega desde 10/01/2007 – hoy · represión de 2018",
+    resumen: "Después de 1979 gobierna el FSLN, hasta perder las elecciones de 1990. Ortega vuelve por elecciones en 2007 y desde entonces se reelige. V-Dem clasifica a Nicaragua como autocracia entre 1979 y 1989 y como autocracia electoral desde 2007.",
+    protagonistas: "Daniel Ortega · Rosario Murillo",
+    estructura: "Policía Nacional subordinada al gobierno y grupos armados progubernamentales que actuaron junto a ella en 2018.",
+    despues: "En marzo de 2023 el Grupo de Expertos de la ONU concluyó que el gobierno comete crímenes de lesa humanidad contra civiles por motivos políticos: asesinatos, prisión, tortura, deportación y persecución. Si esos grupos pasaron también al delito común o al narco: sin relevar.",
+    prueba: "Documentado", enlaces: [E.vdem, E.ghren, E.nicAmnistia] },
+
+  { anio: 2009, tipo: "autoritario", pais: "HND", lugar: L.tegucigalpa, periodo: [2009, 2021],
+    titulo: "Honduras: golpe en 2009 y un presidente condenado por narcotráfico",
+    fechas: "Golpe: 28/06/2009 · Hernández presidente 27/01/2014 – 27/01/2022 · condena: 2024 · indulto: 01/12/2025",
+    resumen: "Los militares sacan del país a Manuel Zelaya. Juan Orlando Hernández gobierna desde 2014 y se reelige en 2017, aunque la Constitución lo prohibía, en una elección muy cuestionada. V-Dem clasifica a Honduras como autocracia electoral entre 2009 y 2021.",
+    protagonistas: "Juan Orlando Hernández · Juan Antonio «Tony» Hernández · Manuel Zelaya",
+    estructura: "Policía Nacional y Fuerzas Armadas, que según el tribunal quedaron al servicio de los narcotraficantes.",
+    despues: "Un jurado de Nueva York lo declaró culpable el 8 de marzo de 2024 y el juez lo condenó a 45 años por conspirar para importar cocaína y por armas. Su hermano Tony cumple prisión perpetua. Trump lo indultó el 1 de diciembre de 2025 y salió de prisión: el indulto le quita la pena, pero no anula el veredicto.",
+    prueba: "Probado", enlaces: [E.vdem, E.johDoj, E.johIc, E.johIndulto] },
+
+  { anio: 2008, tipo: "estructura", pais: "BRA", lugar: L.rio,
+    titulo: "Las milicias de Río: policías que cobran en los barrios",
+    fechas: "CPI de la Alerj: 2008",
+    resumen: "Grupos de policías, bomberos y penitenciarios que se presentaron como defensa contra el tráfico pasan a cobrar protección y servicios en los barrios.",
+    protagonistas: "Milicias de Río de Janeiro · Asamblea Legislativa (Alerj)",
+    estructura: "Agentes del Estado que usan su cargo, sus armas y su información.",
+    despues: "La CPI de 2008 pidió procesar a más de 200 personas. Es el camino 2 de la tesis: la estructura sigue viva y cobra.",
+    prueba: "Documentado", enlaces: [E.milicias] },
+
+  { anio: 2011, tipo: "estructura", pais: "COL", lugar: L.bogota,
+    titulo: "Se disuelve el DAS; su exdirector, condenado por ayudar a los paramilitares",
+    fechas: "Condena: 2011 · disolución: 31/10/2011 · segunda condena: 2017",
+    resumen: "La Corte Suprema condena a Jorge Noguera por concierto para delinquir con el Bloque Norte de las AUC y por el homicidio del sociólogo Alfredo Correa de Andreis. El DAS se disuelve el mismo año, tras el escándalo de las escuchas ilegales.",
+    protagonistas: "Jorge Noguera · Bloque Norte de las AUC",
+    estructura: "DAS: la inteligencia civil nacida en 1953 con Rojas Pinilla.",
+    despues: "En 2017 la Corte volvió a condenar a Noguera por las «chuzadas» del DAS entre 2002 y 2005.",
+    prueba: "Probado", enlaces: [E.nogueraCol, E.nogueraPais, E.noguera2017] },
+
+  { anio: 2011, tipo: "estructura", pais: "ARG", lugar: L.santaFe,
+    titulo: "Santa Fe: el jefe de policía encubría a un narco",
+    fechas: "Hechos: 2011 · condena: 2015 · confirmada por Casación: 2018",
+    resumen: "Hugo Tognoli, jefe de la policía provincial, recibe 6 años por encubrir al narco Daniel «Tuerto» Mendoza. Su coimputado venía de la ex Drogas Peligrosas.",
+    protagonistas: "Hugo Tognoli · Daniel «Tuerto» Mendoza",
+    estructura: "Jefatura de policía y la ex Drogas Peligrosas.",
+    despues: "Con los datos propios (P2): 8 de 10 hechos narco de policías en función salen de unidades opacas; en Santa Fe, la PDI es el 8,8 % de la fuerza y concentra 3 de 4 hechos.",
+    prueba: "Probado", enlaces: [E.tognoli, E.delFrade] },
+
+  { anio: 2019, tipo: "estructura", pais: "MEX", lugar: L.mexico,
+    titulo: "García Luna: el jefe de la guerra contra el narco trabajaba para el narco",
+    fechas: "Detenido: diciembre de 2019 · condenado en Nueva York: 2023 · pena de más de 38 años: 2024",
+    resumen: "El secretario de Seguridad Pública de Calderón, a cargo de la guerra contra los carteles, recibía sobornos del Cártel de Sinaloa.",
+    protagonistas: "Genaro García Luna · Cártel de Sinaloa",
+    estructura: "La Secretaría de Seguridad Pública y la Policía Federal.",
+    despues: "Es la tesis en una sola persona: la estructura creada para combatir al narco quedó a su servicio.",
+    prueba: "Probado", enlaces: [E.garciaLuna],
+    flechas: [{ de: L.mexico, a: L.nuevaYork, texto: "juicio en Nueva York" }] },
+
+  { anio: 2020, tipo: "estructura", pais: "VEN", lugar: L.caracas,
+    titulo: "EE. UU. acusa a la cúpula venezolana de dirigir el Cártel de los Soles",
+    fechas: "26/03/2020",
+    resumen: "La fiscalía de Nueva York acusa a Nicolás Maduro y a 14 funcionarios y exfuncionarios, entre ellos jefes militares y de inteligencia, de narcoterrorismo y narcotráfico.",
+    protagonistas: "Nicolás Maduro · Diosdado Cabello · Hugo Carvajal · Clíver Alcalá",
+    estructura: "Fuerzas Armadas y la inteligencia militar (DGCIM).",
+    despues: "Es una acusación, no una sentencia: hasta que haya juicio, queda como afirmado.",
+    prueba: "Afirmado", enlaces: [E.soles] },
+
+  { anio: 2024, tipo: "estructura", pais: "ECU", lugar: L.guayaquil,
+    titulo: "Ecuador: cárceles tomadas y el caso Metástasis",
+    fechas: "Crisis carcelaria desde 2020 · sentencias de Metástasis: noviembre de 2024",
+    resumen: "La CIDH contó 591 presos muertos en las cárceles desde 2020. El caso Metástasis expuso a jueces, funcionarios y policías al servicio del narco Leandro Norero.",
+    protagonistas: "Wilman Terán (Consejo de la Judicatura) · Pablo Ramírez (SNAI, cárceles) · Leandro Norero",
+    estructura: "Sistema penitenciario y Justicia capturados.",
+    despues: "En noviembre de 2024 se dictaron sentencias para Terán, Ramírez y 18 acusados más. Ecuador pasó en pocos años de tasas bajas de homicidio a una de las más altas de la región.",
+    prueba: "Documentado", enlaces: [E.metastasis, E.cidhEc, E.vistazo] },
+
+  { anio: 2026, tipo: "hito", pais: "BRA", lugar: L.livramento, area: ["URY", "ARG"],
+    titulo: "El Cóndor sigue en los tribunales: Brasil ejecuta una condena a un exmilitar uruguayo",
+    fechas: "26/10/2026",
+    resumen: "El Superior Tribunal de Justicia de Brasil convierte en 30 años de prisión la perpetua que un tribunal italiano impuso en 2021 a Pedro Antonio Narbondo por cuatro homicidios de 1976 en la Argentina.",
+    protagonistas: "Pedro Antonio Narbondo · Superior Tribunal de Justicia · Justicia italiana",
+    estructura: "Operación Cóndor: la red de inteligencia de 1975.",
+    despues: "Medio siglo después, la justicia de varios países sigue procesando crímenes de esa red.",
+    prueba: "Probado", enlaces: [E.narbondo, E.condorMpf] },
+];
+
+
+// ─── Capa de pandillas: el camino al control territorial ──────────────
+// puertas: A cárcel · B Estado armado · C descabezamiento · D patrón político
+// paso: 1-8 del camino. nivel: la etapa del país DESPUÉS del episodio (1 formación … 5 reemplaza al Estado); pinta el mapa.
+const PUERTAS = { A: "A · Cárcel", B: "B · Estado armado", C: "C · Descabezamiento", D: "D · Patrón político" };
+const NIVELES = ["", "Formación", "Organización", "Gobierno del territorio", "Negocia con el Estado", "Reemplaza al Estado"];
+const PASOS = ["", "Grupos sueltos", "Represión masiva", "Cárcel sin control estatal", "La cárcel organiza", "Mando desde adentro", "Gobierno del territorio", "Negociación con el Estado", "Reemplazo del Estado"];
+const GOB = [
+  { anio: 1957, pais: "HTI", lugar: L.puertoPrincipe, puertas: ["B"], paso: 1, nivel: 1,
+    titulo: "Haití: la dictadura arma a sus propios civiles",
+    fechas: "Duvalier: 1957 – 1986",
+    resumen: "La dictadura de los Duvalier crea a los Tontons Macoutes, una milicia propia. Bajo Jean-Claude Duvalier el país se vuelve «un refugio criminal» y el régimen protege a cárteles colombianos.",
+    protagonistas: "François y Jean-Claude Duvalier · Tontons Macoutes",
+    entrada: "Puerta B: el Estado arma a civiles fuera del Ejército.",
+    despues: "Tras la caída de los Duvalier, ex macoutes formaron pandillas («attachés») al servicio de políticos. Esto último es afirmado: falta una fuente primaria.",
+    prueba: "Documentado", enlaces: [E.gHaiti, E.gFides, E.hrwHaiti] },
+
+  { anio: 1979, pais: "BRA", lugar: L.ilhaGrande, puertas: ["A"], paso: 4, nivel: 2,
+    titulo: "Brasil: el Comando Vermelho nace preso en Ilha Grande",
+    fechas: "Años setenta (el año exacto, por verificar)",
+    resumen: "En el presidio de Ilha Grande, con condiciones terribles, los presos se organizan para sobrevivir. La dictadura alojaba ahí a presos comunes junto a guerrilleros; el grupo empieza como «Falange Vermelha».",
+    protagonistas: "Presos del presidio Cândido Mendes",
+    entrada: "Puerta A: una cárcel sin control estatal organiza a los presos.",
+    despues: "Es la organización criminal más antigua de Brasil. Hoy disputa el control de barrios enteros de Río.",
+    prueba: "Documentado", enlaces: [E.gCv, E.gLessing] },
+
+  { anio: 1993, pais: "COL", lugar: L.medellin, puertas: ["C"], paso: 6, nivel: 3,
+    titulo: "Medellín: muere Escobar y sus combos se quedan con los barrios",
+    fechas: "Escobar muere: 02/12/1993 · «Don Berna» toma La Oficina: 1994",
+    resumen: "Escobar había reunido a los «combos» de barrio en La Oficina, el brazo armado del cartel. Sin el jefe, La Oficina sigue con otros dueños y los combos cobran «vacunas» a buses, negocios, camiones y casas, a las que les «venden seguridad».",
+    protagonistas: "La Oficina de Envigado · los combos del Valle de Aburrá",
+    entrada: "Puerta C: cae el jefe y los pedazos viven del territorio.",
+    despues: "Un estudio de 2025 muestra que los combos gobiernan los barrios: resuelven disputas y dan seguridad, sobre todo para proteger la venta de droga. Donde la policía estaba más cerca, los combos dieron más servicios, no menos.",
+    prueba: "Documentado", enlaces: [E.gGangRule, E.gOficina] },
+
+  { anio: 1993, pais: "BRA", lugar: L.taubate, puertas: ["A"], paso: 4, nivel: 2,
+    titulo: "São Paulo: el PCC nace en una cárcel después de una masacre",
+    fechas: "Carandiru: 02/10/1992 · fundación del PCC: 31/08/1993",
+    resumen: "La policía mata a 111 presos en Carandiru. Diez meses después, en la cárcel de Taubaté, un grupo de presos funda el Primeiro Comando da Capital.",
+    protagonistas: "Presos de la Casa de Custodia de Taubaté",
+    entrada: "Puerta A: la organización nace de un abuso del Estado dentro de la cárcel.",
+    despues: "Es hoy la mayor organización criminal de Brasil y manda desde las cárceles.",
+    prueba: "Documentado", enlaces: [E.gPcc] },
+
+  { anio: 1994, pais: "HTI", lugar: L.puertoPrincipe, puertas: ["B"], paso: 1, nivel: 1,
+    titulo: "Haití disuelve su Ejército sin depurarlo",
+    fechas: "Aristide vuelve: 1994 · nueva Policía Nacional: 1995",
+    resumen: "Restituido por tropas de EE. UU., Aristide disuelve el Ejército: saca de juego a una fuerza «muy corrupta», pero el país queda casi sin capacidad para enfrentar el crimen organizado.",
+    protagonistas: "Jean-Bertrand Aristide",
+    entrada: "Puerta B: hombres armados y entrenados quedan sueltos (el «camino 1» de la tesis de Raíces).",
+    despues: "En los años 2000 se acusó a Aristide de armar su propia milicia, las «chimères».",
+    prueba: "Documentado", enlaces: [E.gHaiti, E.gFides] },
+
+  { anio: 1996, pais: "SLV", lugar: L.sanSalvador, puertas: ["A"], paso: 1, nivel: 1, area: ["HND", "GTM"],
+    titulo: "EE. UU. deporta a pandilleros a Centroamérica",
+    fechas: "Desde 1996 · unos 20.000 delincuentes deportados solo en 2000-2004",
+    resumen: "La MS había nacido en Los Ángeles entre hijos de refugiados de la guerra y se había organizado en las cárceles de California, pagándole cuotas a la Mafia Mexicana. Las deportaciones masivas la trasladan a El Salvador, Honduras y Guatemala.",
+    protagonistas: "MS-13 · Barrio 18",
+    entrada: "Puerta A: la organización llega ya formada en las cárceles de EE. UU.",
+    despues: "En países de posguerra, con Estados débiles, las clicas se reparten las colonias.",
+    prueba: "Documentado", enlaces: [E.gMs13],
+    flechas: [{ de: L.losAngeles, a: L.sanSalvador, texto: "deportaciones" }] },
+
+  { anio: 2003, pais: "SLV", lugar: L.sanSalvador, puertas: ["A"], paso: 4, nivel: 2, area: ["HND"],
+    titulo: "Mano dura: las cárceles se llenan y las maras se reorganizan adentro",
+    fechas: "Plan Mano Dura: 07/2003 · Súper Mano Dura: 08/2004",
+    resumen: "Se encarcela a jóvenes por su apariencia o por pertenecer a una mara. El Estado separa a las pandillas por cárcel, «pero eso les abrió un espacio para reorganizarse»: con celulares, rearmaron su estructura desde adentro.",
+    protagonistas: "Francisco Flores · Tony Saca · MS-13 · Barrio 18",
+    entrada: "Puerta A: el mecanismo que describió Lessing. Encarcelar a cada pandillero fortalece a la organización que manda adentro.",
+    despues: "La extorsión («renta») se vuelve el ingreso principal. Un estudio con más de 50.000 pagos muestra que se cobraba como un impuesto, que terminaba en los precios.",
+    prueba: "Documentado", enlaces: [E.gMs13, E.gLessing, E.gRenta] },
+
+  { anio: 2003, pais: "MEX", lugar: L.tamaulipas, puertas: ["B"], paso: 6, nivel: 3,
+    titulo: "Los Zetas: el ejército privado que inventó el cobro de piso",
+    fechas: "Fines de los 90 · operan por su cuenta tras la captura de Osiel Cárdenas (2003)",
+    resumen: "El Cartel del Golfo arma un ejército privado con ex soldados y ex policías. Cuando se independizan, llegan a una plaza y le cobran «piso» primero a los negocios ilegales y después a todos: «O te alineas o te mueres».",
+    protagonistas: "Los Zetas · Cartel del Golfo",
+    entrada: "Puerta B: hombres formados por el Estado cobran por su cuenta.",
+    despues: "Fueron el primer grupo en diversificarse del tráfico hacia la extorsión y el secuestro, con «vocación de control territorial».",
+    prueba: "Documentado", enlaces: [E.gZetas, E.zetas] },
+
+  { anio: 2006, pais: "MEX", lugar: L.mexico, puertas: ["C"], paso: 6, nivel: 3,
+    titulo: "La guerra contra el narco fragmenta a los carteles",
+    fechas: "Desde 12/2006",
+    resumen: "La estrategia de capturar o matar a los jefes parte a las organizaciones. Según AC Consultores, se pasó de 18 organizaciones antes de 2006 a 44 en 2023. Un grupo chico sin ruta de droga propia vive de cobrarle al territorio.",
+    protagonistas: "Gobiernos de Calderón, Peña Nieto y López Obrador",
+    entrada: "Puerta C: el descabezamiento.",
+    despues: "El conteo de AC Consultores es afirmado (lo cita la prensa); que la estrategia fragmenta y aumenta la violencia lo documentan estudios del CIDE.",
+    prueba: "Afirmado", enlaces: [E.gFrag] },
+
+  { anio: 2006, pais: "COL", lugar: L.uraba, puertas: ["B"], paso: 6, nivel: 3,
+    titulo: "Los paramilitares que no se entregaron fundan el Clan del Golfo",
+    fechas: "Desmovilización de las AUC: 2003-2006 · Vicente Castaño se niega: 2006",
+    resumen: "De los mandos que no se desmovilizaron, más ex guerrilleros del EPL como los hermanos Úsuga, nace la organización que hoy se llama Autodefensas Gaitanistas.",
+    protagonistas: "Vicente Castaño · «Don Mario» · «Giovanni» y «Otoniel» Úsuga",
+    entrada: "Puerta B: una estructura armada tolerada por el Estado sigue por su cuenta.",
+    despues: "En 2025 tenía casi 10.000 integrantes y fue el grupo que más creció, un 30 % en un año (FIP).",
+    prueba: "Documentado", enlaces: [E.gUrab, E.gFip, E.convivirHrw] },
+
+  { anio: 2012, pais: "SLV", lugar: L.sanSalvador, puertas: ["A", "D"], paso: 7, nivel: 4,
+    titulo: "La tregua: el gobierno negocia con las maras presas",
+    fechas: "09/03/2012 – 26/05/2014",
+    resumen: "El gobierno traslada a líderes pandilleros de la cárcel de máxima seguridad y facilita una tregua entre la MS-13 y el Barrio 18. Bajan los homicidios; hubo denuncias de más extorsiones y desapariciones.",
+    protagonistas: "Gobierno de Mauricio Funes · MS-13 · Barrio 18",
+    entrada: "La violencia se vuelve moneda de negociación.",
+    despues: "La tregua terminó a mediados de 2013-2014 y los homicidios subieron en 2014 y 2015.",
+    prueba: "Documentado", enlaces: [E.gMs13] },
+
+  { anio: 2013, pais: "MEX", lugar: L.apatzingan, puertas: ["B", "C"], paso: 6, nivel: 3,
+    titulo: "Michoacán: dos pesos por kilo de limón",
+    fechas: "Autodefensas: febrero de 2013 · reportaje en Tepalcatepec: 05/07/2013",
+    resumen: "Los Caballeros Templarios cobran dos pesos por cada kilo de limón a través de los empacadores; a quien no paga no le compran la fruta. El mismo esquema alcanza a tortilleros y vendedores de carne. Los limoneros se arman en autodefensas.",
+    protagonistas: "Caballeros Templarios · autodefensas de Tierra Caliente",
+    entrada: "Puertas B y C: un grupo salido de la fragmentación gobierna una economía regional.",
+    despues: "En 2025, el secretario de Defensa nombró a cinco grupos que extorsionan a limoneros y aguacateros, por hectárea y por tonelada.",
+    prueba: "Documentado", enlaces: [E.gTemplarios, E.gMilenio] },
+
+  { anio: 2014, pais: "VEN", lugar: L.tocoron, puertas: ["A"], paso: 5, nivel: 2,
+    titulo: "El Tren de Aragua nace en una cárcel autogobernada",
+    fechas: "Hacia 2014 · expansión desde 2018 · el Estado retoma Tocorón: 09/2023",
+    resumen: "En Tocorón, bajo el «pranato» (cárceles gobernadas por un jefe preso), la banda llega a recaudar hasta USD 3,6 millones por año solo extorsionando a los presos.",
+    protagonistas: "Héctor «Niño» Guerrero · Tren de Aragua",
+    entrada: "Puerta A en estado puro: la cárcel es la sede.",
+    despues: "Desde 2018 exporta el modelo a Colombia, Perú y Chile siguiendo la migración, con la extorsión como negocio principal.",
+    prueba: "Documentado", enlaces: [E.gTren, E.gTrenBbc],
+    flechas: [{ de: L.tocoron, a: L.lima, texto: "2018: Perú" }, { de: L.tocoron, a: L.santiagoCl, texto: "Chile" }] },
+
+  { anio: 2018, pais: "HTI", lugar: L.puertoPrincipe, puertas: ["B", "D"], paso: 6, nivel: 3,
+    titulo: "La Saline: una masacre de pandillas con policías presentes",
+    fechas: "13 y 14/11/2018",
+    resumen: "Cinco pandillas matan al menos a 26 personas en un ataque planificado. La ONU registró la presencia de un funcionario local y tres policías. El jefe de la federación G9, Jimmy Chérizier, es un ex policía, según documentos judiciales de EE. UU. citados por la prensa.",
+    protagonistas: "Jimmy «Barbecue» Chérizier · federación G9",
+    entrada: "Puertas B y D: según el panel de la ONU (2023), políticos y empresarios dan recursos a las pandillas «para ganar votos o proteger sus bienes»; señaló al expresidente Martelly.",
+    despues: "Según InSight Crime, el G9 fue el brazo violento del partido gobernante y rompió con él tras el asesinato del presidente Moïse (2021).",
+    prueba: "Probado", enlaces: [E.gSaline, E.gPanel, E.gHaiti] },
+
+  { anio: 2020, pais: "SLV", lugar: L.sanSalvador, puertas: ["A", "D"], paso: 7, nivel: 4,
+    titulo: "El Salvador: el pacto secreto con los líderes presos",
+    fechas: "2020-2021 · sanciones de EE. UU.: 08/12/2021",
+    resumen: "Según el Tesoro de EE. UU., funcionarios del gobierno de Bukele organizaron reuniones secretas en las cárceles y dieron «incentivos financieros» y privilegios a la MS-13 y al Barrio 18 para bajar los homicidios. Las pandillas acordaron apoyar a Nuevas Ideas.",
+    protagonistas: "Osiris Luna · Carlos Marroquín · líderes de MS-13 y Barrio 18",
+    entrada: "Puerta D sobre la A: el voto de las colonias que la pandilla gobierna.",
+    despues: "El gobierno salvadoreño lo niega. Es una sanción oficial, no una sentencia.",
+    prueba: "Probado", enlaces: [E.gTesoro] },
+
+  { anio: 2021, pais: "ECU", lugar: L.guayaquil, puertas: ["A", "C"], paso: 6, nivel: 3,
+    titulo: "Ecuador: muere el jefe de Los Choneros y la guerra de las cárceles sale a la calle",
+    fechas: "Rasquiña asesinado: 12/2020 · masacres: 02/2021 y 09/2021",
+    resumen: "Los Choneros controlaban las cárceles desde que el Estado recortó el presupuesto penitenciario (2017-2020). La muerte de su jefe parte la federación: 79 presos muertos en febrero y al menos 119 en septiembre de 2021.",
+    protagonistas: "Los Choneros · Lobos · Tiguerones · Chone Killers",
+    entrada: "Puertas A y C: la cárcel incuba y el descabezamiento detona.",
+    despues: "Las denuncias por extorsión («vacunas») pasan de 1.616 en 2019 a 16.130 en 2025. Ver también el episodio del caso Metástasis en la otra capa.",
+    prueba: "Probado", enlaces: [E.gEcuCarcel, E.gEcuExt, E.cidhEc] },
+
+  { anio: 2022, pais: "SLV", lugar: L.sanSalvador, puertas: ["A"], paso: 2, nivel: 2,
+    titulo: "Régimen de excepción: El Salvador encarcela a 85.000 personas",
+    fechas: "Desde el 27/03/2022",
+    resumen: "Tras una masacre de 87 personas, el pacto se rompe y el gobierno suspende garantías. Las maras pierden el control de sus territorios: sus miembros caen presos, se esconden o huyen.",
+    protagonistas: "Nayib Bukele",
+    entrada: "Vuelta al paso 2, a escala nunca vista: represión masiva.",
+    despues: "La Fiscalía informa un 48,5 % menos de extorsiones en 2024; investigadores creen que creció la cifra negra. Organizaciones de derechos humanos cuentan entre 454 y 470 muertes bajo custodia.",
+    prueba: "Documentado", enlaces: [E.gWola, E.gCustodia, E.gMs13] },
+
+  { anio: 2024, pais: "HTI", lugar: L.puertoPrincipe, puertas: ["A", "B", "D"], paso: 8, nivel: 5,
+    titulo: "Haití: las pandillas vacían las cárceles y derriban al gobierno",
+    fechas: "Asalto a la Penitenciaría Nacional: 02/03/2024 · Henry anuncia su renuncia: 12/03/2024",
+    resumen: "Unidas en la coalición Viv Ansanm, las pandillas liberan a casi 4.000 presos mientras el primer ministro está en el exterior, y fuerzan su renuncia.",
+    protagonistas: "Viv Ansanm · Jimmy Chérizier · Ariel Henry",
+    entrada: "Paso 8: el reemplazo del Estado. La cárcel, la puerta A, usada como arma.",
+    despues: "La ONUDD estima que controlan el 90 % de Puerto Príncipe (07/2025) y viven de cobrar peaje en todos los accesos. En 2026 empezó a llegar la Fuerza de Supresión de Pandillas aprobada por la ONU.",
+    prueba: "Documentado", enlaces: [E.gUpi, E.gOnudd, E.gGsf] },
+
+  { anio: 2024, pais: "BRA", lugar: L.rio, puertas: ["A", "B"], paso: 6, nivel: 3,
+    titulo: "Río: uno de cada tres habitantes vive bajo un grupo armado",
+    fechas: "Datos de 2024 · mapa publicado en 12/2025",
+    resumen: "El mapa del GENI (UFF) y Fogo Cruzado estima que el 34,9 % de la población del Gran Río, unos 4 millones de personas, vive bajo control o influencia de grupos armados. Las milicias cobran el gas, la luz, la TV y el transporte.",
+    protagonistas: "Comando Vermelho · milicias · Terceiro Comando Puro",
+    entrada: "Puertas A (el CV, nacido preso) y B (las milicias, formadas por policías).",
+    despues: "Según el mapa, el CV gana terreno y las milicias retroceden. Falta leer el informe original.",
+    prueba: "Documentado", enlaces: [E.gGeni, E.gMilicias, E.milicias] },
+
+  { anio: 2024, pais: "PER", lugar: L.lima, puertas: ["A"], paso: 6, nivel: 3, area: ["CHL"],
+    titulo: "Perú: la extorsión se multiplica por seis",
+    fechas: "2019 – 2024 · paros de transportistas en 2025",
+    resumen: "Un país sin tradición de maras recibe el modelo nacido en las cárceles venezolanas y lo copian bandas locales. En 2024 hubo seis veces más denuncias por extorsión que en 2019. Más de 500 colegios fueron extorsionados.",
+    protagonistas: "Tren de Aragua · bandas locales",
+    entrada: "Puerta A importada.",
+    despues: "Transportistas paran Lima varias veces en 2025 contra los asesinatos de choferes.",
+    prueba: "Probado", enlaces: [E.gPeru, E.gPeruAfp] },
+
+  { anio: 2024, pais: "HND", lugar: L.tegucigalpa, puertas: ["A"], paso: 6, nivel: 3,
+    titulo: "Honduras: uno de cada nueve hogares paga, casi nadie denuncia",
+    fechas: "Encuesta de la ASJ: 10/2024",
+    resumen: "El 11,6 % de los hogares fue víctima de extorsión en 2024, unos 304.000. En el mismo período, la Secretaría de Seguridad registró solo 484 denuncias.",
+    protagonistas: "MS-13 · Barrio 18 · grupos independientes",
+    entrada: "El mismo camino que El Salvador, sin régimen de excepción exitoso.",
+    despues: "Es el mejor ejemplo de por qué las denuncias no miden la extorsión.",
+    prueba: "Documentado", enlaces: [E.gHnd] },
+
+  { anio: 2025, pais: "GTM", lugar: L.guatemala, puertas: ["A"], paso: 6, nivel: 3,
+    titulo: "Guatemala: 25.961 denuncias de extorsión en un año",
+    fechas: "2025",
+    resumen: "Son 142,7 denuncias cada 100.000 habitantes, la tasa más alta de la región entre los países con datos comparables. Los analistas estiman que entre el 75 y el 85 % de los delitos no se denuncia.",
+    protagonistas: "Barrio 18 · MS-13",
+    entrada: "Puerta A, como sus vecinos.",
+    despues: "La cifra oficial sube por segundo año.",
+    prueba: "Probado", enlaces: [E.gGtm] },
+
+  { anio: 2025, pais: "MEX", lugar: L.apatzingan, puertas: ["B", "C"], paso: 6, nivel: 3,
+    titulo: "Matan al líder limonero que denunciaba el cobro de piso",
+    fechas: "Bernardo Bravo: 19-20/10/2025 · Carlos Manzo, alcalde de Uruapan: 01/11/2025",
+    resumen: "Bernardo Bravo presidía a los citricultores del Valle de Apatzingán y había encabezado las denuncias: «todos los productores hemos sido afectados, no es novedad, tiene años». Dos semanas después matan al alcalde de Uruapan.",
+    protagonistas: "Bernardo Bravo · Carlos Manzo · CJNG y grupos locales",
+    entrada: "Doce años después de los Templarios, el mismo cobro con otros dueños.",
+    despues: "En 2025 hubo 11.081 víctimas de extorsión denunciadas, el récord en diez años. Según la encuesta del INEGI, el 14,1 % de los hogares tuvo una víctima: el silencio, medido.",
+    prueba: "Documentado", enlaces: [E.gBravo, E.gAnimal] },
+
+  { anio: 2026, pais: "COL", lugar: L.uraba, puertas: ["B"], paso: 7, nivel: 4,
+    titulo: "El Clan del Golfo apaga el cobro como gesto político",
+    fechas: "Anuncio: 30/06/2026 · suspensión: 10/07 – 10/10/2026",
+    resumen: "La organización anuncia que suspende el «impuesto de guerra» en varios municipios de Antioquia y Córdoba como «gesto de buena voluntad» hacia el presidente electo De la Espriella.",
+    protagonistas: "Clan del Golfo (Autodefensas Gaitanistas) · Abelardo de la Espriella",
+    entrada: "Paso 7: el cobro como herramienta de negociación.",
+    despues: "Que pueda prender y apagar el cobro muestra hasta dónde funciona como un gobierno. Es afirmado: lo informa un medio.",
+    prueba: "Afirmado", enlaces: [E.gVanguardia, E.gFip] },
+];
+
+// ─── Proyección (Mercator recortada a América) ─────────────────────────
+const EXT = { oeste: -118, este: -32, sur: -56, norte: 42 };
+const ANCHO = 1000;
+const rad = g => g * Math.PI / 180;
+const merc = lat => Math.log(Math.tan(Math.PI / 4 + rad(lat) / 2));
+const ESCALA = ANCHO / rad(EXT.este - EXT.oeste);
+const ALTO = Math.round((merc(EXT.norte) - merc(EXT.sur)) * ESCALA);
+const proy = ([lon, lat]) => [(rad(lon - EXT.oeste)) * ESCALA, (merc(EXT.norte) - merc(lat)) * ESCALA];
+
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}, padre) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (padre) padre.appendChild(n);
+  return n;
+};
+const svg = document.getElementById("mapa");
+svg.setAttribute("viewBox", `0 0 ${ANCHO} ${ALTO}`);
+const fondo = el("rect", { x: 0, y: 0, width: ANCHO, height: ALTO, fill: "var(--mar)" });
+svg.insertBefore(fondo, svg.firstChild.nextSibling);
+
+const paises = {};
+const capaPaises = document.getElementById("capa-paises");
+const capaSobre = document.getElementById("capa-sobre");
+for (const p of window.GEO || []) {
+  const d = p.anillos.map(r => "M" + r.map(c => proy(c).map(v => v.toFixed(1)).join(" ")).join("L") + "Z").join("");
+  const path = el("path", { d, class: "pais" }, capaPaises);
+  el("title", {}, path).textContent = p.nombre;
+  // centro aproximado: el del anillo con más puntos
+  const mayor = p.anillos.reduce((a, b) => (b.length > a.length ? b : a));
+  const xs = mayor.map(c => proy(c));
+  const cx = xs.reduce((s, c) => s + c[0], 0) / xs.length, cy = xs.reduce((s, c) => s + c[1], 0) / xs.length;
+  paises[p.a3] = { path, d, nombre: p.nombre, centro: [cx, cy] };
+}
+
+// ─── Estado ───────────────────────────────────────────────────────────
+// orden cronológico (sort estable: a igual año, queda el orden de la lista)
+// Capas prendidas: una o las dos.
+let ver = { raices: true, gob: false };
+const juntas = () => ver.raices && ver.gob;
+let orden = [];
+function armarOrden() {
+  const lista = [...(ver.raices ? EPISODIOS : []), ...(ver.gob ? GOB.map(e => ({ ...e, tipo: "gobernanza" })) : [])];
+  orden = [...lista].sort((a, b) => a.anio - b.anio).map((e, i) => ({ ...e, id: i }));
+}
+armarOrden();
+let actual = 0;
+
+// Capa de pandillas: la etapa de cada país en el episodio i (el último episodio de ese país hasta i).
+function niveles(i) {
+  const n = {};
+  for (const o of orden) if (o.nivel && o.id <= i && o.anio <= orden[i].anio) n[o.pais] = o.nivel;
+  return n;
+}
+
+// Devuelve los países bajo dictadura y los países bajo régimen autoritario civil ese año.
+function enRegimen(anio) {
+  const militar = new Set(), autoritario = new Set();
+  for (const e of orden) {
+    if (!e.periodo || anio < e.periodo[0] || anio > e.periodo[1]) continue;
+    if (e.pausa && anio >= e.pausa[0] && anio <= e.pausa[1]) continue;  // tramo civil dentro del período
+    (e.tipo === "autoritario" ? autoritario : militar).add(e.pais);
+  }
+  for (const a3 of militar) autoritario.delete(a3);  // si se superponen, manda la dictadura
+  return { militar, autoritario };
+}
+
+function flecha(capa, de, a, texto) {
+  const [x1, y1] = proy(de), [x2, y2] = proy(a);
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1;
+  const largo = Math.hypot(dx, dy) || 1, curva = Math.min(80, largo * 0.22);
+  const cx = mx - dy / largo * curva, cy = my + dx / largo * curva;
+  el("path", { d: `M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}`, class: "flecha", "marker-end": "url(#punta)" }, capa);
+  if (texto) {
+    const t = el("text", { x: (x1 + 2 * cx + x2) / 4 + 8, y: (y1 + 2 * cy + y2) / 4, class: "flecha-texto" }, capa);
+    t.textContent = texto;
+  }
+}
+
+const TIPOS = { dictadura: "Dictadura", autoritario: "Régimen autoritario", hito: "Hito", estructura: "Estructura opaca", gobernanza: "Pandillas" };
+// los enlaces sin copia archivada quedan en null en la versión pública: se descartan acá
+const enlacesHtml = lista => (lista = (lista || []).filter(Boolean)) && !lista.length
+  ? '<span class="fuente">Todavía sin enlaces publicados.</span>'
+  : '<ul class="enlaces">' + lista.map(([tipo, texto, url]) =>
+      `<li><span class="enlace-tipo">${esc(tipo)}</span><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(texto)}</a></li>`).join("") + "</ul>";
+const slug = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+function mostrar(i, conservarScroll = false) {
+  actual = Math.max(0, Math.min(orden.length - 1, i));
+  const e = orden[actual];
+  const gob = e.tipo === "gobernanza", dos = juntas();
+  const sobres = [];
+  const regimen = ver.raices ? enRegimen(e.anio) : { militar: new Set(), autoritario: new Set() };
+  const nivel = ver.gob ? niveles(actual) : {};
+  const area = new Set(e.area || []);
+  for (const [a3, p] of Object.entries(paises)) {
+    // con las dos capas, la etapa de las pandillas es el relleno y el régimen va rayado encima
+    // con las dos capas: si el país no tiene etapa de pandillas, el régimen va en el relleno, como en su capa;
+    // si tiene las dos cosas, el relleno es la etapa y el régimen va rayado encima
+    const ambas = dos && nivel[a3];
+    p.path.classList.toggle("regimen", !ambas && regimen.militar.has(a3));
+    p.path.classList.toggle("autoritario", !ambas && regimen.autoritario.has(a3));
+    // el rayado se dibuja solo en los países que tienen las dos cosas ese año
+    const tipoSobre = !ambas ? "" : regimen.militar.has(a3) ? "sobre-militar" : regimen.autoritario.has(a3) ? "sobre-autoritario" : "";
+    if (tipoSobre) sobres.push([a3, tipoSobre]);
+    for (let k = 1; k <= 5; k++) p.path.classList.toggle("nivel-" + k, nivel[a3] === k);
+    p.path.classList.toggle("area", area.has(a3) && a3 !== e.pais);
+    p.path.classList.toggle("foco", a3 === e.pais);
+  }
+  // el país del episodio, arriba de los demás para que su borde se vea entero
+  if (paises[e.pais]) capaPaises.appendChild(paises[e.pais].path);
+  capaSobre.replaceChildren();
+  for (const [a3, tipo] of sobres) el("path", { d: paises[a3].d, class: `sobre ${tipo}${a3 === e.pais ? " sobre-foco" : ""}` }, capaSobre);
+
+  document.getElementById("anio-grande").textContent = e.anio;
+
+  const etiquetas = document.getElementById("capa-etiquetas");
+  etiquetas.replaceChildren();
+  for (const a3 of new Set([e.pais, ...area])) {
+    const p = paises[a3];
+    if (!p) continue;
+    const t = el("text", { x: p.centro[0], y: p.centro[1] + 22, class: "etiqueta-pais" }, etiquetas);
+    t.textContent = p.nombre;
+  }
+
+  const capaFlechas = document.getElementById("capa-flechas");
+  capaFlechas.replaceChildren();
+  for (const f of e.flechas || []) flecha(capaFlechas, f.de, f.a, f.texto);
+
+  const pines = document.getElementById("capa-pines");
+  pines.replaceChildren();
+  for (const o of orden) {
+    if (o.id === e.id || o.anio > e.anio) continue;
+    const [x, y] = proy(o.lugar);
+    el("circle", { cx: x, cy: y, r: 3, class: "punto-otro" }, pines);
+  }
+  const [px, py] = proy(e.lugar);
+  el("circle", { cx: px, cy: py, r: 7, class: "pin-onda" }, pines);
+  el("circle", { cx: px, cy: py, r: 6, class: "pin" }, pines);
+
+  const nombrePais = paises[e.pais]?.nombre || e.pais;
+  if (gob) {
+    document.getElementById("ficha").innerHTML = `
+    <div class="ficha-cabeza">
+      <span class="chip">${e.anio}</span>
+      ${e.puertas.map(k => `<span class="chip puerta" title="Puerta de entrada">${esc(PUERTAS[k])}</span>`).join("")}
+      <span class="chip paso" title="Paso del camino">Paso ${e.paso} · ${esc(PASOS[e.paso])}</span>
+      <span>${esc(nombrePais)}</span>
+    </div>
+    <h2>${esc(e.titulo)}</h2>
+    <p class="fechas">${esc(e.fechas)}</p>
+    <p class="resumen">${esc(e.resumen)}</p>
+    <dl>
+      <div><dt>Quiénes</dt><dd>${esc(e.protagonistas)}</dd></div>
+      <div><dt>Cómo entra</dt><dd>${esc(e.entrada)}</dd></div>
+      <div><dt>Qué pasó después</dt><dd><span class="prueba p-${slug(e.prueba)}">${esc(e.prueba)}</span>${esc(e.despues)}</dd></div>
+      <div><dt>Etapa del país después del episodio</dt><dd>${e.nivel} · ${esc(NIVELES[e.nivel])}</dd></div>
+      <div class="ancho"><dt>Para leer más</dt><dd>${enlacesHtml(e.enlaces)}</dd></div>
+    </dl>`;
+  } else document.getElementById("ficha").innerHTML = `
+    <div class="ficha-cabeza">
+      <span class="chip">${e.anio}</span>
+      <span class="chip tipo-${e.tipo}">${TIPOS[e.tipo]}</span>
+      <span>${esc(nombrePais)}</span>
+    </div>
+    <h2>${esc(e.titulo)}</h2>
+    <p class="fechas">${esc(e.fechas)}</p>
+    <p class="resumen">${esc(e.resumen)}</p>
+    <dl>
+      <div><dt>Protagonistas</dt><dd>${esc(e.protagonistas)}</dd></div>
+      <div><dt>Estructura opaca</dt><dd>${esc(e.estructura)}</dd></div>
+      <div><dt>Qué pasó después</dt><dd><span class="prueba p-${slug(e.prueba)}">${esc(e.prueba)}</span>${esc(e.despues)}</dd></div>
+      <div class="ancho"><dt>Para leer más</dt><dd>${enlacesHtml(e.enlaces)}</dd></div>
+    </dl>
+    <button class="detalle" type="button" disabled title="Siguiente etapa del atlas">Mapa detallado de ${esc(nombrePais)}: próxima etapa</button>`;
+
+  document.getElementById("anterior").disabled = actual === 0;
+  document.getElementById("inicio").disabled = actual === 0;
+  document.getElementById("siguiente").disabled = actual === orden.length - 1;
+  for (const id of ["contador", "contador-gob"]) document.getElementById(id).textContent = `Episodio ${actual + 1} de ${orden.length}`;
+  for (const m of document.querySelectorAll(".marca")) {
+    const activa = Number(m.dataset.i) === actual;
+    m.classList.toggle("activa", activa);
+    m.setAttribute("aria-current", activa ? "true" : "false");
+  }
+  for (const t of document.querySelectorAll(".fila-texto")) t.classList.toggle("activa", t.dataset.pais === e.pais);
+  moverCursor(e.anio);
+  if (!conservarScroll) document.getElementById("ficha").scrollTop = 0;
+  try { history.replaceState(null, "", "#" + (dos ? "j" : ver.gob ? "g" : "") + actual); } catch (_) {}
+}
+
+// ─── Línea de tiempo ──────────────────────────────────────────────────
+// ─── Línea de tiempo: una fila por país; barras de inicio a fin de cada dictadura ──
+// Fechas exactas (día/mes/año) de cada barra; «desde» marca las que empiezan antes de 1945.
+const fecha = (d, m, a) => a + ((m - 1) * 30.4 + d) / 365;
+const HOY = (() => { const h = new Date(); return fecha(h.getDate(), h.getMonth() + 1, h.getFullYear()); })();
+const BARRAS = {
+  VEN: [fecha(24, 11, 1948), fecha(23, 1, 1958)], CUB: [fecha(10, 3, 1952), fecha(1, 1, 1959)],
+  COL: [fecha(13, 6, 1953), fecha(10, 5, 1957)],
+  // Guatemala en dos tramos: el gobierno civil de Méndez Montenegro (1966-1970) gobernó bajo tutela militar.
+  GTM: [[fecha(27, 6, 1954), fecha(1, 7, 1966)], [fecha(1, 7, 1970), fecha(14, 1, 1986)]],
+  PRY: [fecha(4, 5, 1954), fecha(3, 2, 1989)], HTI: [fecha(22, 10, 1957), fecha(7, 2, 1986)],
+  BRA: [fecha(1, 4, 1964), fecha(15, 3, 1985)], "ARG-1966": [fecha(28, 6, 1966), fecha(25, 5, 1973)],
+  "PER-1968": [fecha(3, 10, 1968), fecha(28, 7, 1980)], PAN: [fecha(11, 10, 1968), fecha(20, 12, 1989)],
+  "BOL-1971": [fecha(21, 8, 1971), fecha(21, 7, 1978)], URY: [fecha(27, 6, 1973), fecha(1, 3, 1985)],
+  CHL: [fecha(11, 9, 1973), fecha(11, 3, 1990)], "ARG-1976": [fecha(24, 3, 1976), fecha(10, 12, 1983)],
+  NIC: [1945, fecha(19, 7, 1979), "desde 1937"], SLV: [1945, fecha(1, 6, 1984), "desde 1931"],
+  "BOL-1980": [fecha(17, 7, 1980), fecha(10, 10, 1982)], "PER-1992": [fecha(5, 4, 1992), fecha(21, 11, 2000)],
+  // Regímenes autoritarios civiles (rayados). El cuarto valor «sigue» marca los que no terminaron.
+  // V-Dem fecha por año: Venezuela desde 2002 (Chávez asumió en 1999). Sus datos llegan a 2025.
+  "CUB-1959": [fecha(1, 1, 1959), HOY, null, "sigue"],
+  "VEN-2002": [fecha(1, 1, 2002), HOY, null, "sigue"],
+  "NIC-2007": [[fecha(19, 7, 1979), fecha(25, 4, 1990)], [fecha(10, 1, 2007), HOY, null, "sigue"]],
+  "HND-2009": [fecha(28, 6, 2009), fecha(27, 1, 2022)],
+};
+// De norte a sur, como se lee el mapa.
+const FILAS = ["MEX", "CUB", "HTI", "GTM", "SLV", "HND", "NIC", "PAN", "VEN", "COL", "ECU", "PER", "BRA", "BOL", "PRY", "CHL", "URY", "ARG"];
+// Capa de pandillas: de norte a sur, solo los países con episodios.
+const FILAS_GOB = ["MEX", "HTI", "GTM", "SLV", "HND", "VEN", "COL", "ECU", "PER", "BRA"];
+let moverCursor = () => {};
+
+// Prepara la línea de tiempo en píxeles reales (no se estira con el ancho de la pantalla).
+// Los años van en un svg aparte, pegado abajo, para que se vean aunque las filas se desplacen.
+// En PC el alto de fila se calcula para que todas las filas entren en la caja (FILA es el máximo).
+function altoFila(nFilas, FILA) {
+  if (!escritorio.matches) return FILA;
+  const libre = document.querySelector(".linea").clientHeight - 20 - 10;  // menos el eje de años y márgenes
+  return Math.max(9, Math.min(FILA, Math.floor(libre / nFilas)));
+}
+function prepararLinea(A0, A1, nFilas, FILA) {
+  const s = document.getElementById("linea"), eje = document.getElementById("linea-eje");
+  s.replaceChildren(); eje.replaceChildren();
+  const caja = document.querySelector(".linea");
+  const W = Math.max(760, Math.floor(caja.clientWidth || 1000)), IZQ = 104, DER = 14, ARR = 6;
+  const H = ARR + nFilas * FILA + 4;
+  s.setAttribute("viewBox", `0 0 ${W} ${H}`); s.style.width = W + "px"; s.style.height = H + "px";
+  eje.setAttribute("viewBox", `0 0 ${W} 20`); eje.style.width = W + "px"; eje.style.height = "20px";
+  const x = a => IZQ + (a - A0) / (A1 - A0) * (W - IZQ - DER);
+  for (let a = A0; a <= 2025; a += 5) {
+    el("line", { x1: x(a), x2: x(a), y1: ARR, y2: H, class: a % 10 ? "guia guia-menor" : "guia" }, s);
+    el("line", { x1: x(a), x2: x(a), y1: 0, y2: 4, class: "guia" }, eje);
+    el("text", { x: x(a), y: 15, class: "tick-texto" }, eje).textContent = a;
+  }
+  return { s, x, IZQ, DER, ARR, H, W };
+}
+
+// Una fila por país. Con las dos capas: la barra de la dictadura arriba y la franja de la etapa de las pandillas abajo.
+function linea() {
+  const dos = juntas();
+  // Filas en el orden en que cada país aparece por primera vez en la secuencia de episodios
+  // (con las capas prendidas); los que no tienen episodios van al final.
+  const posibles = ver.raices ? FILAS : FILAS_GOB;
+  const filas = [...new Set(orden.map(o => o.pais).filter(a3 => posibles.includes(a3)))];
+  for (const a3 of posibles) if (!filas.includes(a3)) filas.push(a3);
+  const FILA = altoFila(filas.length, dos ? 24 : ver.raices ? 17 : 19);
+  // tamaños proporcionales al alto de fila
+  const hBarra = Math.min(10, Math.round(FILA * (dos ? .42 : .6))), rPunto = Math.min(5, FILA * .3);
+  const { s, x, IZQ, DER, ARR, H: base, W } = prepararLinea(ver.raices ? 1945 : 1955, 2027, filas.length, FILA);
+  const centro = a3 => ARR + filas.indexOf(a3) * FILA + FILA / 2;
+  const yR = a3 => centro(a3) - (dos ? FILA * .14 : 0);
+  const yG = a3 => centro(a3) + (dos ? FILA * .3 : 0);
+  for (const a3 of filas) {
+    el("line", { x1: IZQ, x2: W - DER, y1: centro(a3), y2: centro(a3), class: "fila-guia" }, s);
+    const t = el("text", { x: IZQ - 8, y: centro(a3) + 4, class: "fila-texto", "data-pais": a3, style: FILA < 14 ? "font-size:10px" : "" }, s);
+    t.textContent = paises[a3]?.nombre || a3;
+  }
+  const activar = (g, e) => {
+    g.addEventListener("click", () => mostrar(e.id));
+    g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); mostrar(e.id); } });
+  };
+  // pandillas: cada episodio pinta su fila con la etapa hasta el episodio siguiente del mismo país (o hasta hoy)
+  if (ver.gob) {
+    const alto = dos ? Math.max(3, Math.round(FILA * .24)) : hBarra;
+    for (const a3 of FILAS_GOB) {
+      const eps = orden.filter(o => o.tipo === "gobernanza" && o.pais === a3);
+      eps.forEach((o, k) => {
+        const fin = k + 1 < eps.length ? eps[k + 1].anio : HOY;
+        el("rect", { x: x(o.anio), y: yG(a3) - alto / 2, width: Math.max(2, x(fin) - x(o.anio)), height: alto, class: "tramo n" + o.nivel }, s);
+      });
+    }
+  }
+  const cursor = el("line", { x1: 0, x2: 0, y1: ARR - 2, y2: base, class: "cursor" }, s);
+  moverCursor = anio => { cursor.setAttribute("x1", x(anio + .5)); cursor.setAttribute("x2", x(anio + .5)); };
+
+  if (ver.raices) {
+    // primero las barras, después los puntos, para que los puntos queden encima
+    // rayado de las barras de regímenes autoritarios civiles
+    const defs = el("defs", {}, s);
+    const pat = el("pattern", { id: "rayado-linea", width: 5, height: 5, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
+    el("line", { x1: 0, y1: 0, x2: 0, y2: 5, class: "rayado-barra" }, pat);
+    const conBarra = e => e.tipo === "dictadura" || e.tipo === "autoritario";
+    for (const e of orden.filter(conBarra)) {
+      const r = BARRAS[`${e.pais}-${e.anio}`] || BARRAS[e.pais];
+      if (!r || !FILAS.includes(e.pais)) continue;
+      const g = el("g", { class: `marca ${e.tipo}`, tabindex: 0, role: "button", "data-i": e.id }, s);
+      el("title", {}, g).textContent = `${e.fechas} · ${e.titulo}`;
+      for (const tramo of Array.isArray(r[0]) ? r : [r]) {
+        el("rect", { x: x(tramo[0]), y: yR(e.pais) - hBarra / 2, width: Math.max(4, x(tramo[1]) - x(tramo[0])), height: hBarra, rx: 2 }, g);
+        if (tramo[2] && hBarra >= 8) {  // el texto «desde» solo entra si la barra es alta
+          const t = el("text", { x: x(tramo[0]) + 4, y: yR(e.pais) + 3.5, class: "barra-desde" }, g);
+          t.textContent = "◂ " + tramo[2];
+        }
+        if (tramo[3]) {
+          const t = el("text", { x: x(tramo[1]) + 2, y: yR(e.pais) + 3, class: "barra-sigue" }, g);
+          t.textContent = "▸";
+        }
+      }
+      activar(g, e);
+    }
+    for (const e of orden.filter(e => e.tipo === "hito" || e.tipo === "estructura")) {
+      if (!FILAS.includes(e.pais)) continue;
+      const g = el("g", { class: `marca ${e.tipo}`, tabindex: 0, role: "button", "data-i": e.id }, s);
+      el("title", {}, g).textContent = `${e.anio} · ${e.titulo}`;
+      el("circle", { cx: x(e.anio + .5), cy: yR(e.pais), r: rPunto }, g);
+      activar(g, e);
+    }
+  }
+  if (ver.gob) {
+    for (const e of orden.filter(e => e.tipo === "gobernanza")) {
+      const g = el("g", { class: "marca gobernanza", tabindex: 0, role: "button", "data-i": e.id }, s);
+      el("title", {}, g).textContent = `${e.anio} · ${e.titulo}`;
+      el("circle", { cx: x(e.anio + .5), cy: yG(e.pais), r: dos ? Math.min(3.8, FILA * .2) : Math.min(4.5, FILA * .3) }, g);
+      activar(g, e);
+    }
+  }
+}
+
+// ─── Cambio de capa ───────────────────────────────────────────────────
+function ponerCapas(i = 0) {
+  const dos = juntas();
+  document.body.classList.toggle("juntas", dos);
+  document.getElementById("capa-raices").setAttribute("aria-pressed", String(ver.raices));
+  document.getElementById("capa-gob").setAttribute("aria-pressed", String(ver.gob));
+  for (const [id, mostrarlo] of [["leyenda-raices", ver.raices && !dos], ["leyenda-gob", ver.gob && !dos], ["leyenda-juntas", dos],
+                                 ["claves-raices", ver.raices], ["claves-gob", ver.gob], ["contador-gob", !dos]])
+    document.getElementById(id).hidden = !mostrarlo;
+  document.getElementById("mapa-desc").textContent = dos
+    ? "Mapa de América con cada país pintado según la etapa de las pandillas y, rayados encima, los países bajo dictadura o régimen autoritario ese año."
+    : ver.gob
+    ? "Mapa de América con cada país pintado según la etapa del camino al control territorial de las pandillas en el año del episodio."
+    : "Mapa de América con el país del episodio, los países bajo régimen militar ese año y las flechas de intervención o coordinación.";
+  document.getElementById("linea").setAttribute("aria-label", dos ? "Línea de tiempo de las dos capas" : ver.gob ? "Línea de tiempo de la capa de pandillas" : "Línea de tiempo de episodios");
+  armarOrden();
+  linea();
+  mostrar(i);
+  if (clavesIntro().some(k => !introVista(k))) abrirIntro(true);
+}
+// Prende o apaga una capa (siempre queda al menos una) y sigue en el mismo episodio, o en el más cercano por año.
+function alternar(k) {
+  const nuevo = { ...ver, [k]: !ver[k] };
+  if (!nuevo.raices && !nuevo.gob) return;
+  const antes = orden[actual];
+  ver = nuevo;
+  armarOrden();
+  let i = orden.findIndex(o => o.titulo === antes.titulo && o.anio === antes.anio);
+  if (i < 0) i = orden.findIndex(o => o.anio >= antes.anio);
+  ponerCapas(i < 0 ? orden.length - 1 : i);
+}
+document.getElementById("capa-raices").addEventListener("click", () => alternar("raices"));
+document.getElementById("capa-gob").addEventListener("click", () => alternar("gob"));
+
+document.getElementById("anterior").addEventListener("click", () => mostrar(actual - 1));
+document.getElementById("inicio").addEventListener("click", () => mostrar(0));
+document.getElementById("siguiente").addEventListener("click", () => mostrar(actual + 1));
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest && ev.target.closest("input, textarea")) return;
+  if (!intro.hidden) { if (ev.key === "Escape") cerrarIntro(); return; }
+  if (ev.key === "ArrowRight") mostrar(actual + 1);
+  if (ev.key === "ArrowLeft") mostrar(actual - 1);
+  if (ev.key === "Home") { ev.preventDefault(); mostrar(0); }
+});
+
+// ─── Modo pantalla ────────────────────────────────────────────────────
+const escritorio = matchMedia("(min-width: 961px) and (min-height: 540px)");
+const cuerpo = document.querySelector(".cuerpo");
+// El mapa toma todo el alto de la ficha; su ancho sale de la proporción del mapa (sin pasar el 55 %).
+function ajustarMapa() {
+  if (!escritorio.matches) { cuerpo.style.gridTemplateColumns = ""; return; }
+  const ancho = Math.min(cuerpo.clientHeight * ANCHO / ALTO, cuerpo.clientWidth * 0.55);
+  cuerpo.style.gridTemplateColumns = `${Math.floor(ancho)}px minmax(0, 1fr)`;
+}
+if (window.ResizeObserver) new ResizeObserver(ajustarMapa).observe(cuerpo);
+// Al cambiar el tamaño de la ventana se rehace la línea de tiempo con el ancho nuevo.
+let esperaResize;
+addEventListener("resize", () => {
+  clearTimeout(esperaResize);
+  esperaResize = setTimeout(() => { linea(); mostrar(actual, true); ajustarMapa(); }, 150);
+});
+
+// ─── Referencias del mapa: plegadas; se abren con el botón ─────────────
+const figMapa = document.querySelector(".mapa"), verRef = document.getElementById("ver-ref");
+verRef.addEventListener("click", () => {
+  const abiertas = figMapa.classList.toggle("ref-abiertas");
+  verRef.setAttribute("aria-expanded", String(abiertas));
+  verRef.textContent = abiertas ? "Referencias ▾" : "Referencias ▴";
+});
+
+// ─── Introducción de cada capa ────────────────────────────────────────
+const intro = document.getElementById("intro");
+const introVista = k => { try { return localStorage.getItem("atlas-intro-" + k) === "1"; } catch (_) { return false; } };
+const clavesIntro = () => [...(ver.raices ? ["raices"] : []), ...(ver.gob ? ["gob"] : []), ...(juntas() ? ["juntas"] : [])];
+function abrirIntro(soloNuevo = false) {
+  const mostrarlo = k => clavesIntro().includes(k) && !(soloNuevo && introVista(k));
+  document.getElementById("intro-titulo").textContent = juntas() ? "Atlas de Raíces: las dos capas" : ver.gob ? "Pandillas: el camino" : "Atlas de Raíces";
+  for (const k of ["raices", "gob", "juntas"]) document.getElementById("intro-" + k).hidden = !mostrarlo(k);
+  intro.hidden = false;
+  // El foco va al botón sin desplazar: la ventana se abre arriba, en «Por qué este atlas».
+  document.getElementById("cerrar-intro").focus({ preventScroll: true });
+  intro.querySelector(".intro").scrollTop = 0;
+}
+function cerrarIntro() {
+  intro.hidden = true;
+  try { for (const k of clavesIntro()) localStorage.setItem("atlas-intro-" + k, "1"); } catch (_) {}
+}
+document.getElementById("ver-intro").addEventListener("click", () => abrirIntro());
+document.getElementById("cerrar-intro").addEventListener("click", cerrarIntro);
+intro.addEventListener("click", ev => { if (ev.target === intro) cerrarIntro(); });
+
+const hash = (location.hash || "").slice(1);
+// #5: regímenes · #g5: pandillas · #j5: las dos juntas
+const prefijo = /^[gj]/.test(hash) ? hash[0] : "";
+const inicial = parseInt(prefijo ? hash.slice(1) : hash, 10);
+ver = { raices: prefijo !== "g", gob: prefijo !== "" };
+ponerCapas(Number.isInteger(inicial) ? inicial : 0);
+</script>
