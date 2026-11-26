@@ -518,6 +518,10 @@ const E = {
   kissinger: ["Desclasificado", "National Security Archive: Kissinger, Cóndor y el asesinato de Letelier", "https://nsarchive2.gwu.edu/NSAEBB/NSAEBB416/"],
   condorMpf: ["Sentencia", "Ministerio Público Fiscal: sentencia del juicio Plan Cóndor (2016)", "https://www.fiscales.gob.ar/lesa-humanidad/operacion-condor-se-probo-la-asociacion-ilicita-y-se-impusieron-penas-de-8-a-25-anos-de-prision/"],
   narbondo: ["Prensa", "Infobae/EFE: Brasil ejecuta la condena italiana a Narbondo (26/10/2026)", "https://www.infobae.com/america/agencias/2026/10/26/brasil-impone-30-anos-de-carcel-a-exmilitar-uruguayo-por-crimenes-de-la-operacion-condor/"],
+  bombardeo55: ["Informe", "Archivo Nacional de la Memoria: Bombardeo del 16 de junio de 1955, investigación histórica (edición revisada, 2015; PDF)", "https://www.argentina.gob.ar/sites/default/files/anm_-_bombardeo_16_de_junio_de_1955_1_0.pdf"],
+  cpm1956: ["Archivo", "Comisión Provincial por la Memoria: 1956, la SIDE (decreto 776/56) y el decreto 4161 (PDF)", "https://www.comisionporlamemoria.org/archivos/archivo/de-lo-secreto-a-lo-publico/dossier6.pdf"],
+  jlsLesa: ["Sentencia", "Provincia de Buenos Aires: los fusilamientos de José León Suárez, declarados de lesa humanidad (22/06/2026)", "https://www.gba.gob.ar/derechoshumanos/noticias/los_fusilamientos_de_josé_león_suárez_reconocidos_como_delitos_de_lesa"],
+  guido62: ["Archivo", "Casa Rosada: José María Guido (1962-1963), principales medidas de gobierno", "https://www.casarosada.gob.ar/informacion/actividad-oficial/36335-jose-maria-guido-1962-1963"],
   nuncaMas: null,
   gordon: ["Prensa", "La Nación: condenaron a 7 secuaces de Aníbal Gordon (2005)", "https://lanacion.com.ar/sociedad/condenaron-a-7-secuaces-de-anibal-gordon-nid696220"],
   puccio: ["Prensa", "Página/12: el clan Puccio (2004)", "https://www.pagina12.com.ar/diario/sociedad/3-30592-2004-01-21.html"],
@@ -655,6 +659,24 @@ const EPISODIOS = [
     despues: "En 1992 aparecieron los Archivos del Terror, con documentos de la represión y del Cóndor. Qué pasó con los aparatos después de 1989: sin relevar.",
     prueba: "Sin relevar", enlaces: [E.terrorPj, E.cvjPy, E.terrorHnn] },
 
+  { anio: 1955, tipo: "hito", pais: "ARG", lugar: L.buenosAires, agregado: "2026-11-25",
+    titulo: "La Marina bombardea la Plaza de Mayo para matar a Perón",
+    fechas: "16/06/1955 · primera pasada a las 12:40",
+    resumen: "En un intento de golpe, la aviación naval, con apoyo de un sector de la Aeronáutica, tira más de cien bombas (entre 9 y 14 toneladas) sobre la Casa Rosada, la Plaza de Mayo y sus alrededores, y la infantería de Marina intenta tomar la Casa de Gobierno. Mueren más de 300 personas: solo doce estaban dentro de la Casa Rosada, el resto eran civiles en la calle.",
+    protagonistas: "Aníbal Olivieri (ministro de Marina) · Samuel Toranzo Calderón (infantería de Marina) · Benjamín Gargiulo · Néstor Noriega (jefe de los aviones)",
+    estructura: "Conspiración cívico-militar con unos 300 civiles armados, los «comandos civiles».",
+    despues: "Tres meses después, los mismos sectores derrocan a Perón (ficha siguiente). Los pilotos huyen a Uruguay. Los ayudantes de Olivieri, entre ellos Emilio Massera, quedan eximidos de ser juzgados; Massera integra la Junta de 1976, y otros participantes actúan en la represión de 1976-1983, según el Archivo Nacional de la Memoria. El Estado asumió la responsabilidad recién con la ley 26.564 de indemnizaciones (2009).",
+    prueba: "Documentado", enlaces: [E.bombardeo55] },
+
+  { anio: 1955, tipo: "dictadura", pais: "ARG", lugar: L.buenosAires, periodo: [1955, 1957], agregado: "2026-11-25",
+    titulo: "Golpe contra Perón: la «Revolución Libertadora»",
+    fechas: "16/09/1955 – 01/05/1958",
+    resumen: "Un alzamiento militar derroca a Perón. Gobierna Lonardi y, desde noviembre de 1955, Aramburu con el almirante Rojas, hasta entregar el poder a Frondizi. El decreto 4161 (05/03/1956) prohíbe hasta nombrar a Perón y al peronismo. En junio de 1956, ante un levantamiento peronista, hay fusilamientos sin juicio, como los de los basurales de José León Suárez.",
+    protagonistas: "Eduardo Lonardi · Pedro Eugenio Aramburu · Isaac Francisco Rojas",
+    estructura: "SIDE (Secretaría de Informaciones de Estado), creada por el decreto 776/56 en enero de 1956 para centralizar la información de los servicios de las Fuerzas Armadas, los ministerios y las provincias. También sirvió para la represión política.",
+    despues: "La SIDE es la misma que reaparece en las fichas de 1966 y 1976. El peronismo siguió proscripto hasta 1973. El 22/06/2026, un juzgado federal de San Martín declaró de lesa humanidad los fusilamientos de José León Suárez (cinco muertos, siete sobrevivientes) y responsabilizó al Estado: los policías actuaron por orden de Aramburu y Rojas. Los responsables ya murieron.",
+    prueba: "Probado", enlaces: [E.cpm1956, E.jlsLesa] },
+
   { anio: 1957, tipo: "dictadura", pais: "HTI", lugar: L.puertoPrincipe, periodo: [1957, 1985],
     titulo: "Los Duvalier en Haití: padre e hijo",
     fechas: "22/10/1957 – 07/02/1986",
@@ -681,6 +703,15 @@ const EPISODIOS = [
     estructura: "Ministerio del Interior (MININT, 1961), con la Seguridad del Estado y la inteligencia exterior, y los Comités de Defensa de la Revolución (CDR, 1960) en cada cuadra.",
     despues: "Causa n.º 1 de 1989: un tribunal militar condenó al general Arnaldo Ochoa, al coronel Antonio de la Guardia y a otros dos oficiales por tráfico de drogas, diamantes y contrabando, con una red montada en buena parte dentro del MININT. Los cuatro fueron fusilados en julio de 1989 y el ministerio fue purgado. Lo probó el propio Estado, pero observadores extranjeros lo llamaron un juicio armado; si la cúpula sabía sigue en discusión.",
     prueba: "Documentado", enlaces: [E.vdem, E.causa1, E.ochoa] },
+
+  { anio: 1962, tipo: "dictadura", pais: "ARG", lugar: L.buenosAires, periodo: [1962, 1963], agregado: "2026-11-25",
+    titulo: "Cae Frondizi: Guido gobierna bajo tutela militar",
+    fechas: "29/03/1962 – 12/10/1963",
+    resumen: "Las Fuerzas Armadas derrocan a Arturo Frondizi después de que el peronismo ganara las elecciones de marzo de 1962. La Corte Suprema lo trata como acefalía y asume el presidente del Senado, José María Guido, un civil que firma un acta por la que se compromete a ejecutar «las medidas políticas indicadas por las Fuerzas Armadas». Se cierra el Congreso, se intervienen las provincias y se anulan las elecciones.",
+    protagonistas: "José María Guido · Arturo Frondizi (derrocado)",
+    estructura: "Sin relevar. Los mismos servicios de inteligencia de la etapa anterior; las Fuerzas Armadas se reservan la facultad de destituir al presidente.",
+    despues: "Las elecciones de 1963 se hacen con el peronismo proscripto y gana Arturo Illia, derrocado a su vez en 1966 (ficha siguiente de la Argentina).",
+    prueba: "Documentado", enlaces: [E.guido62] },
 
   { anio: 1964, tipo: "dictadura", pais: "BRA", lugar: L.brasilia, periodo: [1964, 1984],
     titulo: "Golpe en Brasil: 21 años de gobiernos militares",
@@ -1228,7 +1259,15 @@ let orden = [];
 function armarOrden() {
   const lista = [...(ver.raices ? EPISODIOS : []), ...(ver.gob ? GOB.map(e => ({ ...e, tipo: "gobernanza" })) : [])];
   orden = [...lista].sort((a, b) => a.anio - b.anio).map((e, i) => ({ ...e, id: i }));
+  // Número que va en la dirección (#N, #gN, #jN). Los episodios publicados el 24/11/2026 conservan el suyo,
+  // para no romper enlaces compartidos; los que llevan «agregado» siguen al final, en el orden en que se sumaron.
+  const previos = orden.filter(e => !e.agregado);
+  const sumados = orden.filter(e => e.agregado).sort((a, b) => a.agregado.localeCompare(b.agregado));
+  previos.forEach((e, n) => { e.num = n; });
+  sumados.forEach((e, n) => { e.num = previos.length + n; });
 }
+// Posición en el orden cronológico del episodio con ese número de dirección (-1 si no existe).
+const posicionDeNumero = n => orden.findIndex(e => e.num === n);
 armarOrden();
 let actual = 0;
 
@@ -1373,7 +1412,7 @@ function mostrar(i, conservarScroll = false) {
   for (const t of document.querySelectorAll(".fila-texto")) t.classList.toggle("activa", t.dataset.pais === e.pais);
   moverCursor(e.anio);
   if (!conservarScroll) document.getElementById("ficha").scrollTop = 0;
-  try { history.replaceState(null, "", "#" + (dos ? "j" : ver.gob ? "g" : "") + actual); } catch (_) {}
+  try { history.replaceState(null, "", "#" + (dos ? "j" : ver.gob ? "g" : "") + orden[actual].num); } catch (_) {}
 }
 
 // ─── Línea de tiempo ──────────────────────────────────────────────────
@@ -1608,5 +1647,6 @@ const hash = (location.hash || "").slice(1);
 const prefijo = /^[gj]/.test(hash) ? hash[0] : "";
 const inicial = parseInt(prefijo ? hash.slice(1) : hash, 10);
 ver = { raices: prefijo !== "g", gob: prefijo !== "" };
-ponerCapas(Number.isInteger(inicial) ? inicial : 0);
+armarOrden();
+ponerCapas(Number.isInteger(inicial) ? Math.max(0, posicionDeNumero(inicial)) : 0);
 </script>
